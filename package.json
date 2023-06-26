@@ -1,0 +1,24 @@
+{
+  "name": "swiftpoker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "denon run --allow-read --allow-net server.js",
+    "dev": "denon run --allow-read --allow-net server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/react": "^18.2.14",
+    "@typescript-eslint/eslint-plugin": "^5.50.0",
+    "eslint": "^8.0.1",
+    "eslint-config-standard-with-typescript": "^35.0.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "eslint-plugin-react": "^7.32.2",
+    "typescript": "*"
+  }
+}

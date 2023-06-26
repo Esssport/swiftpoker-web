@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "lib": ["deno.window", "dom", "DOM", "es2020"],
+    "types": ["vite/client", "jsx", "react", "tsx", "ts"],
+    "strict": true,
+    "exclude": ["/public/*"]
+  },
+
+  "lint": {
+    "exclude": ["/public/*"]
+  },
+  "exclude": ["/public/*"]
+}
