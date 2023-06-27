@@ -38,18 +38,21 @@ function broadcastUsernames() {
 
 router.get("/start_web_socket", async (ctx) => {
   const socket = await ctx.upgrade();
+  console.log("SOCKET info", socket);
   const username = ctx.request.url.searchParams.get("username");
   if (connectedClients.has(username)) {
     socket.close(1008, `Username ${username} is already taken`);
     return;
   }
   socket.username = username;
+
   connectedClients.set(username, socket);
   console.log(`New client connected: ${username}`);
 
   // broadcast the active users list when a new user logs in
   socket.onopen = () => {
-    socket.send(dealer());
+    socket.send(JSON.stringify("WELCOME TO THE SERVER"));
+    socket.send(JSON.stringify(dealer()));
     broadcastUsernames();
   };
 
@@ -83,11 +86,9 @@ router.get("/start_web_socket", async (ctx) => {
   };
 });
 
-// rout
-
 app.use(router.routes());
 app.use(router.allowedMethods());
-// TODO: add tsx support here, or point to the right html
+// TODO: index.html acts like a 404 page (probably)
 app.use(async (context) => {
   await context.send({
     root: `${Deno.cwd()}/`,

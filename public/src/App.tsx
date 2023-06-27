@@ -5,10 +5,12 @@ const myUsername = "Esssport";
 const socket = new WebSocket(
   `ws://localhost:8080/start_web_socket?username=${myUsername}`,
 );
-
+let counter = 0;
 socket.onmessage = (m) => {
   const data = JSON.parse(m.data);
 
+  console.log("here's the data in the solid app", data);
+  console.log("counter", ++counter);
   let userListHtml = "";
   switch (data.event) {
     case "update-users":
@@ -52,7 +54,7 @@ window.onload = () => {
 };
 
 const App: Component = () => {
-  return <h1>App.tsx content goes here</h1>;
+  return <h1>Frontend data comes from App.tsx</h1>;
 };
 
 export default App;
