@@ -51,9 +51,8 @@ router.get("/start_web_socket", async (ctx) => {
 
   // broadcast the active users list when a new user logs in
   socket.onopen = () => {
-    socket.send(JSON.stringify("WELCOME TO THE SERVER"));
     socket.send(JSON.stringify(dealer()));
-    broadcastUsernames();
+    // broadcastUsernames();
   };
 
   // when a client disconnects, remove them from the connected clients list
@@ -62,7 +61,7 @@ router.get("/start_web_socket", async (ctx) => {
     // TODO: withdraw nano to socket's wallet
     console.log(`Client ${socket.username} disconnected`);
     connectedClients.delete(socket.username);
-    broadcastUsernames();
+    // broadcastUsernames();
   };
 
   // broadcast new message if someone sent one

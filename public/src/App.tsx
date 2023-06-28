@@ -1,4 +1,5 @@
-import type { Component } from "solid-js";
+import { type Component, createSignal } from "solid-js";
+import { reviver } from "../../utils/tools";
 
 // const myUsername = prompt("Please enter your name") || "Anonymous";
 const myUsername = "Esssport";
@@ -7,10 +8,11 @@ const socket = new WebSocket(
 );
 let counter = 0;
 socket.onmessage = (m) => {
-  const data = JSON.parse(m.data);
+  const data = JSON.parse(m.data, reviver);
 
-  console.log("here's the data in the solid app", data);
-  console.log("counter", ++counter);
+  console.log("DATA", data);
+  setAppData(data);
+
   let userListHtml = "";
   switch (data.event) {
     case "update-users":
@@ -53,8 +55,14 @@ window.onload = () => {
   // });
 };
 
+const [appData, setAppData] = createSignal({});
+
 const App: Component = () => {
-  return <h1>Frontend data comes from App.tsx</h1>;
+  return (
+    <h1>
+      <b>{JSON.stringify(appData())}</b>
+    </h1>
+  );
 };
 
 export default App;
