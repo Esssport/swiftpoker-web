@@ -1,5 +1,3 @@
-import { replacer, reviver } from "./tools.ts";
-
 const suits = ["♠", "♥", "♦", "♣"];
 const suitNames = { s: "Spades", h: "Hearts", d: "Diamonds", c: "Clubs" };
 const suitInitials = ["s", "h", "d", "c"];
@@ -18,12 +16,6 @@ const stack = [
   "K",
   "A",
 ];
-// how to suffle a map in javascript
-// https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
-
-let cardsIndex: number[] = [];
-for (let i = 0; i < 52; i++) cardsIndex.push(i);
-let unshuffled = ["hello", "a", "t", "q", 1, 2, 3, { cats: true }];
 
 function shuffle(array: any[]) {
   return array
@@ -32,31 +24,41 @@ function shuffle(array: any[]) {
     .map(({ value }) => value);
 }
 
-const spadeStack = new Map(
-  stack.map((card, i) => ["S" + card, { value: i, suit: "Spades" }]),
-);
-const heartStack = new Map(
-  stack.map((card, i) => ["H" + card, { value: i, suit: "Hearts" }]),
-);
-const diamondStack = new Map(
-  stack.map((card, i) => ["D" + card, { value: i, suit: "Diamonds" }]),
-);
-const clubStack = new Map(
-  stack.map((card, i) => ["C" + card, { value: i, suit: "Clubs" }]),
-);
+type Card = [string, { value: number; suit: string }];
 
-const deck = new Map(
-  [...spadeStack].concat([...heartStack]).concat([...diamondStack]).concat([
+const spadeStack = stack.map((
+  card,
+  i,
+) => ["S" + card, { value: i, suit: "Spades" }]);
+const heartStack = stack.map((
+  card,
+  i,
+) => ["H" + card, { value: i, suit: "Hearts" }]);
+const diamondStack = stack.map((
+  card,
+  i,
+) => ["D" + card, { value: i, suit: "Diamonds" }]);
+const clubStack = stack.map((
+  card,
+  i,
+) => ["C" + card, { value: i, suit: "Clubs" }]);
+
+const deck = [...spadeStack].concat([...heartStack]).concat([...diamondStack])
+  .concat([
     ...clubStack,
-  ]),
-);
+  ]) as Card[];
 
-const deckArray = [...deck];
-
-console.log("deckArray", shuffle(deckArray));
-
-// console.log(deck);
-export function dealer(players = 2) {
-  console.log("SHUFFLINGGGG", shuffle(unshuffled));
-  return JSON.stringify(deck, replacer);
+export function dealCardsTo(players = 2) {
+  if (players < 2) {
+    throw new Error("You need at least 2 players to play");
+  }
+  if (players > 10) {
+    throw new Error("You can't play with more than 10 players");
+  }
+  const shuffledDeck: Card[] = shuffle(deck);
+  const results = {
+    hands: shuffledDeck.slice(0, players * 2),
+    communityCards: shuffledDeck.slice(players * 2, players * 2 + 5),
+  };
+  return results;
 }

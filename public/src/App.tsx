@@ -1,34 +1,28 @@
-import { type Component, createSignal } from "solid-js";
-import { reviver } from "../../utils/tools";
+import {
+  type Component,
+  createEffect,
+  createSignal,
+  JSX,
+  JSXElement,
+} from "solid-js";
 
-// const myUsername = prompt("Please enter your name") || "Anonymous";
-const myUsername = "Esssport";
-const socket = new WebSocket(
-  `ws://localhost:8080/start_web_socket?username=${myUsername}`,
-);
-let counter = 0;
-socket.onmessage = (m) => {
-  const data = JSON.parse(m.data, reviver);
+//   switch (data.event) {
+//     case "update-users":
+//     case "send-message":
+//       break;
 
-  console.log("DATA", data);
-  setAppData(data);
-
-  let userListHtml = "";
-  switch (data.event) {
-    case "update-users":
-      // refresh displayed user list
-      for (const username of data.usernames) {
-        userListHtml += `<div> ${username} </div>`;
-      }
-      // document.getElementById("users").innerHTML = userListHtml;
-      // break;
-
-    case "send-message":
-      // display new chat message
-      addMessage(data.username, data.message);
-      break;
-  }
-};
+function connectToTable() {
+  // TODO: error if empty input
+  const username = document.getElementById("username") as HTMLInputElement;
+  const serverSocket = new WebSocket(
+    `ws://localhost:8080/start_web_socket?username=${username.value}`,
+  );
+  serverSocket.onmessage = (m) => {
+    const data = JSON.parse(m.data);
+    console.log(data);
+    setAppData(data);
+  };
+}
 
 function addMessage(username, message) {
   // displays new message
@@ -55,14 +49,34 @@ window.onload = () => {
   // });
 };
 
+const Main: Component = () => {
+  return (
+    <>
+      <div class="md:w-2/3">
+        <input
+          class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+          id="username"
+          type="text"
+          value="anonymous"
+        />
+      </div>
+      <button
+        class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+        onClick={connectToTable}
+      >
+        Connect to Table
+      </button>
+      <h1>
+        <b>{JSON.stringify(appData())}</b>
+      </h1>
+    </>
+  );
+};
+
 const [appData, setAppData] = createSignal({});
 
 const App: Component = () => {
-  return (
-    <h1>
-      <b>{JSON.stringify(appData())}</b>
-    </h1>
-  );
+  return <Main />;
 };
 
 export default App;
