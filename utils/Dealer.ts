@@ -48,7 +48,7 @@ const deck = [...spadeStack].concat([...heartStack]).concat([...diamondStack])
     ...clubStack,
   ]) as Card[];
 
-export function dealCardsTo(players = 2) {
+export function dealCards(players = 2) {
   if (players < 2) {
     throw new Error("You need at least 2 players to play");
   }

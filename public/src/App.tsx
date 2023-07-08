@@ -1,82 +1,110 @@
-import {
-  type Component,
-  createEffect,
-  createSignal,
-  JSX,
-  JSXElement,
-} from "solid-js";
+import { type Component, createSignal } from "solid-js";
 
-//   switch (data.event) {
-//     case "update-users":
-//     case "send-message":
-//       break;
-
-function connectToTable() {
-  // TODO: error if empty input
+function joinTable() {
   const username = document.getElementById("username") as HTMLInputElement;
+  const tableID = document.getElementById("tableID") as HTMLInputElement;
   const serverSocket = new WebSocket(
-    `ws://localhost:8080/start_web_socket?username=${username.value}`,
+    `ws://localhost:8080/join_table/${tableID.value}?username=${username.value}`,
   );
   serverSocket.onmessage = (m) => {
-    const data = JSON.parse(m.data);
-    console.log(data);
+    const data = m.data;
+    console.log(m);
     setAppData(data);
   };
 }
 
-function addMessage(username, message) {
-  // displays new message
-  // document.getElementById(
-  //   "conversation",
-  // ).innerHTML += `<b> ${username} </b>: ${message} <br/>`;
+function createTable() {
+  const request = new Request("http://localhost:8080/create_table");
+  const table = fetch(request).then((response) => {
+    response.json().then((data) => {
+      setTableData(data);
+    });
+  })
+    .catch((err) => console.log(err));
 }
 
-// on page load
-window.onload = () => {
-  // when the client hits the ENTER key
-  // document.getElementById("data").addEventListener("keypress", (e) => {
-  //   if (e.key === "Enter") {
-  //     const inputElement = document.getElementById("data");
-  //     const message = (inputElement as HTMLInputElement).value;
-  //     (inputElement as HTMLInputElement).value = "";
-  //     socket.send(
-  //       JSON.stringify({
-  //         event: "send-message",
-  //         message,
-  //       }),
-  //     );
-  //   }
-  // });
-};
+const [appData, setAppData] = createSignal({});
+const [tableData, setTableData] = createSignal(new Map());
 
 const Main: Component = () => {
   return (
     <>
       <div class="md:w-2/3">
         <input
-          class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+          class="max-w-sm bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
           id="username"
           type="text"
           value="anonymous"
         />
       </div>
+      <div class="md:w-2/3">
+        <input
+          class="max-w-sm bg-pink-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+          id="tableID"
+          type="text"
+          value="1"
+        />
+      </div>
       <button
         class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
-        onClick={connectToTable}
+        onClick={createTable}
       >
-        Connect to Table
+        Create Table
+      </button>
+      <button
+        class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+        onClick={joinTable}
+      >
+        Join Table
       </button>
       <h1>
         <b>{JSON.stringify(appData())}</b>
       </h1>
+      <section class="md:container md:mx-auto">
+        <h1 class="font-bold text-gray-900">Tables</h1>
+        {JSON.stringify(tableData())}
+      </section>
     </>
   );
 };
-
-const [appData, setAppData] = createSignal({});
 
 const App: Component = () => {
   return <Main />;
 };
 
 export default App;
+
+// // on page load
+// window.onload = () => {
+//   const username = document.getElementById("username") as HTMLInputElement;
+//   const serverSocket = new WebSocket(
+//     `ws://localhost:8080/join_table/212`,
+//   );
+// };
+
+// when the client hits the ENTER key
+// document.getElementById("data").addEventListener("keypress", (e) => {
+//   if (e.key === "Enter") {
+//     const inputElement = document.getElementById("data");
+//     const message = (inputElement as HTMLInputElement).value;
+//     (inputElement as HTMLInputElement).value = "";
+//     socket.send(
+//       JSON.stringify({
+//         event: "send-message",
+//         message,
+//       }),
+//     );
+//   }
+// });
+
+//   switch (data.event) {
+//     case "update-users":
+//     case "send-message":
+//       break;
+
+// function addMessage(username, message) {
+//   // displays new message
+//   // document.getElementById(
+//   //   "conversation",
+//   // ).innerHTML += `<b> ${username} </b>: ${message} <br/>`;
+// }
