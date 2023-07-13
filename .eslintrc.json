@@ -1,4 +1,14 @@
 {
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "lib": [
+      "deno.window",
+      "dom",
+      "DOM",
+      "es2022"
+    ]
+  },
   "env": {
     "browser": true,
     "es2021": true,

@@ -1,21 +1,34 @@
 import { type Component, createSignal } from "solid-js";
 
+// TODO: Add the ability to reconnect to a table after getting disconnected store in local storage or a cookie
 function joinTable() {
   const username = document.getElementById("username") as HTMLInputElement;
   const tableID = document.getElementById("tableID") as HTMLInputElement;
-  const serverSocket = new WebSocket(
+  let serverSocket: WebSocket;
+  serverSocket = new WebSocket(
     `ws://localhost:8080/join_table/${tableID.value}?username=${username.value}`,
   );
+  serverSocket.onerror = (e) => {
+    console.log("ERROR", e);
+  };
+  serverSocket.onclose = (e) => {
+    console.log(e.reason);
+  };
   serverSocket.onmessage = (m) => {
     const data = m.data;
-    console.log(m);
     setAppData(data);
   };
 }
 
 function createTable() {
-  const request = new Request("http://localhost:8080/create_table");
-  const table = fetch(request).then((response) => {
+  const tableLimit = prompt("How many people can join this table?");
+  const request = new Request(
+    `http://localhost:8080/create_table?limit=${tableLimit}`,
+    {
+      method: "GET",
+    },
+  );
+  fetch(request).then((response) => {
     response.json().then((data) => {
       setTableData(data);
     });
