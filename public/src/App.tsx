@@ -14,14 +14,36 @@ function joinTable() {
   serverSocket.onclose = (e) => {
     console.log(e.reason);
   };
+  serverSocket.onopen = (ws) => {
+    console.log(ws);
+    serverSocket.send(JSON.stringify("Hello from the client!"));
+  };
   serverSocket.onmessage = (m) => {
-    const data = m.data;
-    setAppData(data);
+    const data = JSON.parse(m.data);
+    switch (data.event) {
+      case "update-table":
+        setAppData(data);
+        break;
+      case "buy-in":
+        const buyInRange = data.buyInRange;
+        //Prompt user to buy in within the range of the table
+        const amount = Number(prompt(
+          `Buy in between ${buyInRange[0]} and ${buyInRange[1]}`,
+        ));
+        const finalAmount = amount <= buyInRange[1] && amount >= buyInRange[0]
+          ? amount
+          : buyInRange[0];
+        setBuyInAmount(finalAmount);
+        serverSocket.send(
+          JSON.stringify({ event: "buy-in", buyIn: finalAmount }),
+        );
+        break;
+    }
   };
 }
 
 function createTable() {
-  const tableLimit = prompt("How many people can join this table?");
+  const tableLimit = prompt("How many people can join this table?") || 10;
   const request = new Request(
     `http://localhost:8080/create_table?limit=${tableLimit}`,
     {
@@ -38,6 +60,7 @@ function createTable() {
 
 const [appData, setAppData] = createSignal({});
 const [tableData, setTableData] = createSignal(new Map());
+const [buyInAmount, setBuyInAmount] = createSignal(0);
 
 const Main: Component = () => {
   return (
@@ -77,6 +100,8 @@ const Main: Component = () => {
         <h1 class="font-bold text-gray-900">Tables</h1>
         {JSON.stringify(tableData())}
       </section>
+      <h1 class="font-bold text-gray-900">buy In</h1>
+      {JSON.stringify(buyInAmount())}
     </>
   );
 };

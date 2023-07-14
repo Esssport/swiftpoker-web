@@ -1,6 +1,3 @@
-const suits = ["♠", "♥", "♦", "♣"];
-const suitNames = { s: "Spades", h: "Hearts", d: "Diamonds", c: "Clubs" };
-const suitInitials = ["s", "h", "d", "c"];
 const stack = [
   "2",
   "3",

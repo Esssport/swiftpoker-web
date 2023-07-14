@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "denon run --allow-read --allow-net server.js",
-    "dev": "denon run --allow-read --allow-net server.js"
+    "dev": "denon run --allow-read --allow-net server.js",
+    "redis-start": "brew services start redis",
+    "redis-stop": "brew services stop redis",
+    "redis-info": "brew services info redis"
   },
   "author": "",
   "license": "ISC",

@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "importsNotUsedAsValues": "remove",
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "node",
@@ -7,10 +8,15 @@
     "esModuleInterop": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
-    "types": ["vite/client"],
+    "types": [
+      "vite/client"
+    ],
     "noEmit": true,
-    "isolatedModules": true,
+    "isolatedModules": false,
     "allowImportingTsExtensions": true,
-    "lib": ["ES2022", "DOM"]
+    "lib": [
+      "ES2022",
+      "DOM"
+    ]
   }
 }

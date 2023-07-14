@@ -1,4 +1,4 @@
-export type User = {
+export type Player = {
   id?: number;
   username?: string;
   wallet?: string;
@@ -29,7 +29,8 @@ export type Table = {
   name?: string;
   startedAt: string;
   maxPlayers: number;
-  players?: Map<User, number>; // Map of User to their current bet
+  buyInRange?: number[];
+  players?: Player[]; // Map of User to their current bet
   pot?: number;
   dealer?: number;
   blinds: number[];
