@@ -2,18 +2,16 @@ const connectedClients = new Map();
 import { Table } from "../data_types.ts";
 import { redisClient } from "../utils/getRedis.ts";
 const bankMap = new Map();
+let tables = new Map();
+const previousTables = await redisClient.get("tables");
 
 export const handleJoinTable = async (ctx) => {
-  const socket: WebSocket = await ctx.upgrade();
-
-  const tablesJson = await redisClient.get("tables");
-  const tables = new Map(JSON.parse(tablesJson));
+  const socket: WebSocket = ctx.upgrade();
+  if (previousTables) tables = new Map(JSON.parse(previousTables));
 
   const username = ctx.request.url.searchParams.get("username");
   const tableID = ctx.params.tableID;
-  console.log("SOCKET", socket.url);
   socket.onopen = (ctx) => {
-    console.log("HERE", ctx);
     if (!tableID || !tables?.has(Number(tableID))) {
       socket.close(
         1008,
@@ -45,6 +43,10 @@ export const handleJoinTable = async (ctx) => {
 
     currentTable.players.push(username);
     console.log("pushed", currentTable.players);
+    const tablesArray = Array.from(tables);
+    redisClient.set("tables", JSON.stringify(tablesArray));
+
+    console.log("currentTable", currentTable);
     //TODO: send only the table created to the client
     socket.send(
       JSON.stringify({ event: "update-table", table: Array.from(tables) }),
@@ -62,6 +64,9 @@ export const handleJoinTable = async (ctx) => {
       case "buy-in":
         const currentTable = tables.get(Number(tableID));
     }
+    //TODO: Set the buy-in amount in redis
+    // const tablesArray = Array.from(tables);
+    // redisClient.set("tables", JSON.stringify(tablesArray));
     console.log("message", data);
   };
   socket.onclose = () => {

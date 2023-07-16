@@ -4,8 +4,9 @@ import { type Component, createSignal } from "solid-js";
 function joinTable() {
   const username = document.getElementById("username") as HTMLInputElement;
   const tableID = document.getElementById("tableID") as HTMLInputElement;
-  let serverSocket: WebSocket;
-  serverSocket = new WebSocket(
+
+  //TODO: Add Try catch block
+  const serverSocket = new WebSocket(
     `ws://localhost:8080/join_table/${tableID.value}?username=${username.value}`,
   );
   serverSocket.onerror = (e) => {
@@ -15,11 +16,11 @@ function joinTable() {
     console.log(e.reason);
   };
   serverSocket.onopen = (ws) => {
-    console.log(ws);
     serverSocket.send(JSON.stringify("Hello from the client!"));
   };
   serverSocket.onmessage = (m) => {
     const data = JSON.parse(m.data);
+    console.log("message IN FRONTEND", data);
     switch (data.event) {
       case "update-table":
         setAppData(data);

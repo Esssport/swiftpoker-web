@@ -1,4 +1,4 @@
-import { connect } from "https://deno.land/x/redis/mod.ts";
+import { connect } from "https://deno.land/x/redis@v0.31.0/mod.ts";
 const port = 18610;
 let i = 0;
 let interval = setInterval(async () => {
