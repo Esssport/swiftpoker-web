@@ -7,6 +7,7 @@ const app = new Application();
 const router = new Router();
 const port = 8080;
 
+//TODO: better to change to table/join and table/create
 router.get("/create_table", handleCreateTable);
 router.get("/join_table/:tableID", handleJoinTable);
 

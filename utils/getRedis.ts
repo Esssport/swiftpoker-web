@@ -1,18 +1,28 @@
-import { connect } from "https://deno.land/x/redis@v0.31.0/mod.ts";
-const port = 18610;
+import { connect } from "https://deno.land/x/redis/mod.ts";
+
+const port = `6379`;
+const username = `alirezaizadjoo`;
 let i = 0;
 let interval = setInterval(async () => {
   console.log("Connecting to redis " + i);
   i++;
 }, 1000);
-export const redisClient = await connect({
-  socket: {
-    host: "redis-18610.c276.us-east-1-2.ec2.cloud.redislabs.com",
-    port: port,
-  },
-}).catch((err) => {
-  console.log("redis failed to connect to " + port, err);
-  return err;
+
+// export const redisClient = createClient(port);
+
+const redisClient = await connect({
+  hostname: "127.0.0.1",
+  port: port,
+  username: username,
 });
-console.log("redis connected on port " + port);
+console.log(await redisClient.ping());
+
+await redisClient.connect();
+// catch((err) => {
+//   console.log("redis failed to connect to " + port, err);
+//   return err;
+// }).then((res) => {
+//   console.log("redis connected on port " + port, res);
+// });
 clearInterval(interval);
+export { redisClient };

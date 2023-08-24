@@ -20,16 +20,7 @@ export const handleJoinTable = async (ctx) => {
       console.log("CONNECTION CLOSED for invalid tableID");
       return;
     }
-    //TODO: check the username is not taken and is not empty (only on login, not on join table)
-    // if (!username || connectedClients.has(username)) {
-    //   socket.close(1008, `CONNECTION CLOSED, Username taken or missing`);
-    //   console.log("CONNECTION CLOSED, Username taken or missing");
-    //   return;
-    // }
-    connectedClients.set(username, socket);
     const currentTable = tables.get(Number(tableID)) as Table;
-    console.log(`New player ${username} connected to table ${tableID}`);
-
     if (currentTable.players.includes(username)) {
       socket.close(1008, `CONNECTION CLOSED, Username already in table`);
       console.log("CONNECTION CLOSED, Username already in table");
@@ -40,8 +31,18 @@ export const handleJoinTable = async (ctx) => {
       console.log("CONNECTION CLOSED, Table is full");
       return;
     }
+    //TODO: check the username is not taken and is not empty (only on login, not on join table)
+    // if (!username || connectedClients.has(username)) {
+    //   socket.close(1008, `CONNECTION CLOSED, Username taken or missing`);
+    //   console.log("CONNECTION CLOSED, Username taken or missing");
+    //   return;
+    // }
+    connectedClients.set(username, socket);
+    console.log(`New player ${username} connected to table ${tableID}`);
 
     currentTable.players.push(username);
+    console.log("previousTables", previousTables);
+    tables.set(Number(tableID), currentTable);
     console.log("pushed", currentTable.players);
     const tablesArray = Array.from(tables);
     redisClient.set("tables", JSON.stringify(tablesArray));
