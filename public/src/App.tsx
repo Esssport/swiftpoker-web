@@ -1,4 +1,4 @@
-import { type Component, createSignal } from "solid-js";
+import { type Component, createEffect, createSignal } from "solid-js";
 
 // TODO: Add the ability to reconnect to a table after getting disconnected store in local storage or a cookie
 function joinTable() {
@@ -7,7 +7,7 @@ function joinTable() {
 
   //TODO: Add Try catch block
   const serverSocket = new WebSocket(
-    `ws://localhost:8080/join_table/${tableID.value}?username=${username.value}`,
+    `ws://localhost:8080/tables/join/${tableID.value}?username=${username.value}`,
   );
   serverSocket.onerror = (e) => {
     console.log("ERROR", e);
@@ -22,7 +22,7 @@ function joinTable() {
     const data = JSON.parse(m.data);
     console.log("message IN FRONTEND", data);
     switch (data.event) {
-      case "update-table":
+      case "table-updated":
         setAppData(data);
         break;
       case "buy-in":
@@ -43,10 +43,19 @@ function joinTable() {
   };
 }
 
+function getTableData() {
+  fetch("http://localhost:8080/tables").then((response) => {
+    console.log("response", response);
+    response.json().then((data) => {
+      setTableData(data);
+    });
+  });
+}
+
 function createTable() {
   const tableLimit = prompt("How many people can join this table?") || 10;
   const request = new Request(
-    `http://localhost:8080/create_table?limit=${tableLimit}`,
+    `http://localhost:8080/tables/create?limit=${tableLimit}`,
     {
       method: "GET",
     },
@@ -63,12 +72,16 @@ const [appData, setAppData] = createSignal({});
 const [tableData, setTableData] = createSignal(new Map());
 const [buyInAmount, setBuyInAmount] = createSignal(0);
 
+createEffect(() => {
+  getTableData();
+});
+
 const Main: Component = () => {
   return (
     <>
       <div class="md:w-2/3">
         <input
-          class="max-w-sm bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+          class="max-w-sm bg-gray-900 appearance-none border-2 border-gray-500 rounded w-full py-2 px-4 text-gray-200 leading-tight focus:outline-none focus:bg-black focus:border-purple-500"
           id="username"
           type="text"
           value="anonymous"
@@ -76,20 +89,20 @@ const Main: Component = () => {
       </div>
       <div class="md:w-2/3">
         <input
-          class="max-w-sm bg-pink-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+          class="max-w-sm bg-green-900 appearance-none border-2 border-gray-500 rounded w-full py-2 px-4 text-gray-200 leading-tight focus:outline-none focus:bg-black focus:border-purple-500"
           id="tableID"
           type="text"
           value="1"
         />
       </div>
       <button
-        class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+        class="bg-blue hover:bg-gray-100 text-gray-200 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
         onClick={createTable}
       >
         Create Table
       </button>
       <button
-        class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+        class="bg-blue hover:bg-gray-100 text-gray-200 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
         onClick={joinTable}
       >
         Join Table
@@ -98,10 +111,10 @@ const Main: Component = () => {
         <b>{JSON.stringify(appData())}</b>
       </h1>
       <section class="md:container md:mx-auto">
-        <h1 class="font-bold text-gray-900">Tables</h1>
+        <h1 class="font-bold text-blue-300">Tables</h1>
         {JSON.stringify(tableData())}
       </section>
-      <h1 class="font-bold text-gray-900">buy In</h1>
+      <h1 class="font-bold text-blue-300">buy In</h1>
       {JSON.stringify(buyInAmount())}
     </>
   );

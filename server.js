@@ -2,14 +2,18 @@ import { Application, Router } from "https://deno.land/x/oak@v12.5.0/mod.ts";
 import { handleJoinTable } from "./api/handleJoinTable.ts";
 import { handleCreateTable } from "./api/handleCreateTable.ts";
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
+import { handleTables } from "./api/handleTables.ts";
 
 const app = new Application();
 const router = new Router();
 const port = 8080;
 
-//TODO: better to change to table/join and table/create
-router.get("/create_table", handleCreateTable);
-router.get("/join_table/:tableID", handleJoinTable);
+router.get("/tables/create", handleCreateTable);
+router.get("/tables/join/:tableID", handleJoinTable);
+router.get("/tables", handleTables);
+// router.get("/tables/:tableID", handleJoinTable);
+// handle table info, returns info about table. table info can be stored as a
+// separate key in redis
 
 // Logger
 app.use(async (ctx, next) => {

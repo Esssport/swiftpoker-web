@@ -2,15 +2,14 @@ const connectedClients = new Map();
 import { Table } from "../data_types.ts";
 import { redisClient } from "../utils/getRedis.ts";
 const bankMap = new Map();
-let tables = new Map();
-const previousTables = await redisClient.get("tables");
 
 export const handleJoinTable = async (ctx) => {
+  const tables = new Map(JSON.parse(await redisClient.hget("tables", "cash")));
   const socket: WebSocket = ctx.upgrade();
-  if (previousTables) tables = new Map(JSON.parse(previousTables));
 
   const username = ctx.request.url.searchParams.get("username");
   const tableID = ctx.params.tableID;
+
   socket.onopen = (ctx) => {
     if (!tableID || !tables?.has(Number(tableID))) {
       socket.close(
@@ -41,16 +40,17 @@ export const handleJoinTable = async (ctx) => {
     console.log(`New player ${username} connected to table ${tableID}`);
 
     currentTable.players.push(username);
-    console.log("previousTables", previousTables);
     tables.set(Number(tableID), currentTable);
     console.log("pushed", currentTable.players);
-    const tablesArray = Array.from(tables);
-    redisClient.set("tables", JSON.stringify(tablesArray));
 
-    console.log("currentTable", currentTable);
+    const tablesArray = Array.from(tables);
+    //TODO: set the table in redis under players maybe?
+
+    redisClient.hset("tables", "cash", JSON.stringify(tablesArray));
+
     //TODO: send only the table created to the client
     socket.send(
-      JSON.stringify({ event: "update-table", table: Array.from(tables) }),
+      JSON.stringify({ event: "table-updated", table: Array.from(tables) }),
     );
     socket.send(
       JSON.stringify({
@@ -65,9 +65,10 @@ export const handleJoinTable = async (ctx) => {
       case "buy-in":
         const currentTable = tables.get(Number(tableID));
     }
-    //TODO: Set the buy-in amount in redis
+    //TODO: Set the buy-in amount in redis,
+    //possibly in a hash table with the tableID as key, or just the player's username
     // const tablesArray = Array.from(tables);
-    // redisClient.set("tables", JSON.stringify(tablesArray));
+
     console.log("message", data);
   };
   socket.onclose = () => {
