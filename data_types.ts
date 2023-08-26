@@ -27,7 +27,7 @@ export type Tournament = {
 export type Table = {
   id?: number;
   name?: string;
-  startedAt: string;
+  startedAt?: string;
   maxPlayers: number;
   buyInRange?: number[];
   players?: Player[]; // Map of User to their current bet

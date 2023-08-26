@@ -59,7 +59,7 @@ export const handleJoinTable = async (ctx) => {
     switch (data.event) {
       case "buy-in":
         const table = JSON.parse(await redisClient.hget("tables", tableID));
-        table[username] = { buyIn: data.payload };
+        table.players.push({ username, buyIn: data.payload });
         redisClient.hset("tables", tableID, JSON.stringify(table));
 
         socket.send(
