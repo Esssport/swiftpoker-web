@@ -11,6 +11,8 @@ const port = 8080;
 router.get("/tables/create", handleCreateTable);
 router.get("/tables/join/:tableID", handleJoinTable);
 router.get("/tables", handleTables);
+//router.get("/users/", handleJoinTable);
+//router.get("/users/userID", handleJoinTable);
 // router.get("/tables/:tableID", handleJoinTable);
 // handle table info, returns info about table. table info can be stored as a
 // separate key in redis

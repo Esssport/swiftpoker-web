@@ -20,12 +20,15 @@ function joinTable() {
   };
   serverSocket.onmessage = (m) => {
     const data = JSON.parse(m.data);
+    if (!!data?.payload?.prompt) {
+      setPrompts(data.payload.prompt);
+    }
     console.log("message IN FRONTEND", data);
     switch (data.event) {
       case "table-updated":
-        setAppData(data);
+        setAppData(data.payload.table);
         break;
-      case "buy-in":
+      case "table-joined":
         const buyInRange = data.buyInRange;
         //Prompt user to buy in within the range of the table
         const amount = Number(prompt(
@@ -36,7 +39,7 @@ function joinTable() {
           : buyInRange[0];
         setBuyInAmount(finalAmount);
         serverSocket.send(
-          JSON.stringify({ event: "buy-in", buyIn: finalAmount }),
+          JSON.stringify({ event: "buy-in", payload: finalAmount }),
         );
         break;
     }
@@ -71,6 +74,7 @@ function createTable() {
 const [appData, setAppData] = createSignal({});
 const [tableData, setTableData] = createSignal(new Map());
 const [buyInAmount, setBuyInAmount] = createSignal(0);
+const [prompts, setPrompts] = createSignal([]);
 
 createEffect(() => {
   getTableData();
@@ -116,6 +120,10 @@ const Main: Component = () => {
       </section>
       <h1 class="font-bold text-blue-300">buy In</h1>
       {JSON.stringify(buyInAmount())}
+      <section class="md:container md:mx-auto">
+        <h1 class="font-bold text-blue-300">PRMOPTS</h1>
+        {JSON.stringify(prompts())}
+      </section>
     </>
   );
 };
