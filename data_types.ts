@@ -28,12 +28,12 @@ export type Table = {
   id?: number;
   name?: string;
   startedAt?: string;
-  maxPlayers: number;
+  maxPlayers?: number;
   buyInRange?: number[];
   players?: Player[]; // Map of User to their current bet
   pot?: number;
   dealer?: number;
-  blinds: number[];
+  blinds?: number[];
   currentBet?: number;
   speed?: "Normal" | "Fast" | "Hyper";
   deck?: number[];

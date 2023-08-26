@@ -27,9 +27,9 @@ export const handleCreateTable = async (ctx) => {
   const tableObj: Table = {
     id: tableNumber,
     players: [],
-    blinds: [10, 25],
-    buyInRange: [100, 500],
-    maxPlayers: limitValue,
+    // blinds: [10, 25],
+    // buyInRange: [100, 500],
+    // maxPlayers: limitValue,
   };
   redisClient.hset("tables", tableNumber, JSON.stringify(tableObj));
   const tablesArray = Array.from(tables);

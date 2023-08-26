@@ -13,20 +13,21 @@ function joinTable() {
     console.log("ERROR", e);
   };
   serverSocket.onclose = (e) => {
-    console.log(e.reason);
+    console.log(username.value, e.reason);
   };
   serverSocket.onopen = (ws) => {
     serverSocket.send(JSON.stringify("Hello from the client!"));
   };
+  getTableData();
   serverSocket.onmessage = (m) => {
     const data = JSON.parse(m.data);
-    if (!!data?.payload?.prompt) {
-      setPrompts(data.payload.prompt);
+    if (!!data?.prompt) {
+      setPrompts(data.prompt);
     }
     console.log("message IN FRONTEND", data);
     switch (data.event) {
       case "table-updated":
-        setAppData(data.payload.table);
+        setTableData(data.payload.table);
         break;
       case "table-joined":
         const buyInRange = data.buyInRange;
@@ -46,13 +47,23 @@ function joinTable() {
   };
 }
 
-function getTableData() {
+function getTablesData() {
   fetch("http://localhost:8080/tables").then((response) => {
     console.log("response", response);
     response.json().then((data) => {
-      setTableData(data);
+      setTablesData(data);
     });
   });
+}
+
+function getTableData(tableID = 1) {
+  fetch(`http://localhost:8080/tables/${tableID}`)
+    .then((response) => {
+      response.json().then((data) => {
+        setTableData(data);
+      });
+    })
+    .catch((err) => console.log(err));
 }
 
 function createTable() {
@@ -65,19 +76,20 @@ function createTable() {
   );
   fetch(request).then((response) => {
     response.json().then((data) => {
-      setTableData(data);
+      setTablesData(data);
     });
   })
     .catch((err) => console.log(err));
 }
 
-const [appData, setAppData] = createSignal({});
-const [tableData, setTableData] = createSignal(new Map());
+const [tableData, setTableData] = createSignal({});
+const [tablesData, setTablesData] = createSignal(new Map());
 const [buyInAmount, setBuyInAmount] = createSignal(0);
 const [prompts, setPrompts] = createSignal([]);
 
 createEffect(() => {
   getTableData();
+  getTablesData();
 });
 
 const Main: Component = () => {
@@ -112,16 +124,16 @@ const Main: Component = () => {
         Join Table
       </button>
       <h1>
-        <b>{JSON.stringify(appData())}</b>
+        <b>{JSON.stringify(tableData())}</b>
       </h1>
       <section class="md:container md:mx-auto">
         <h1 class="font-bold text-blue-300">Tables</h1>
-        {JSON.stringify(tableData())}
+        {JSON.stringify(tablesData())}
       </section>
       <h1 class="font-bold text-blue-300">buy In</h1>
       {JSON.stringify(buyInAmount())}
       <section class="md:container md:mx-auto">
-        <h1 class="font-bold text-blue-300">PRMOPTS</h1>
+        <h1 class="font-bold text-blue-300">Prompts</h1>
         {JSON.stringify(prompts())}
       </section>
     </>
