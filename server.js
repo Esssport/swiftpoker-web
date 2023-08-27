@@ -36,6 +36,7 @@ app.use(async (ctx, next) => {
 // table listener
 app.use(async (ctx, next) => {
   console.log("table listener");
+  ctx.state.test = "test";
   await next();
 });
 

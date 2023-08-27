@@ -1,4 +1,7 @@
 const connectedClients = new Map();
+const sockets = new Map();
+const tableIDs = new Map();
+//have something like {username: tableID}
 import { Table } from "../data_types.ts";
 import { redisClient } from "../utils/getRedis.ts";
 
@@ -36,7 +39,19 @@ export const handleJoinTable = async (ctx) => {
 
     //TODO: remove duplicate code
     connectedClients.set(username, socket);
+    sockets.set(username, socket);
+    tableIDs.set(username, tableID);
+    //call all sockets to update their tables
+
     clients.set(username, socket);
+
+    broadcast(
+      {
+        event: "broadcast",
+        prompt: { length: sockets.size, username, tableID },
+      },
+      tableID,
+    );
     //FIXME: this is not working, not storing socket info, only the usrnames are stored
     redisClient.hset("clients", "atTable", JSON.stringify(Array.from(clients)));
     console.log(`${username} connected to table ${tableID}`);
@@ -61,42 +76,32 @@ export const handleJoinTable = async (ctx) => {
     const updatedTable = { ...table, players: updatedPlayers };
     redisClient.hset("tables", tableID, JSON.stringify(updatedTable));
     let i = 0;
-    interval = setInterval(() => {
-      socket.send(JSON.stringify({ event: "ping", payload: i }));
-      i++;
-    }, 1000);
 
-    socket.send(
-      JSON.stringify({
+    broadcast({
+      event: "table-updated",
+      payload: {
+        tables: Array.from(tables),
+        table: updatedTable,
+      },
+      prompt: username + " joined table " + tableID,
+    }, tableID);
+
+    if (hasReconnected) {
+      broadcast({
         event: "table-updated",
         payload: {
           tables: Array.from(tables),
           table: updatedTable,
         },
-        prompt: username + " joined the table!",
-      }),
-    );
-
-    if (hasReconnected) {
-      socket.send(
-        JSON.stringify({
-          event: "table-updated",
-          payload: {
-            tables: Array.from(tables),
-            table: updatedTable,
-          },
-          prompt: username + " user returned!",
-        }),
-      );
+        prompt: username + " user returned to table " + tableID,
+      }, tableID);
       return;
     }
 
-    socket.send(
-      JSON.stringify({
-        event: "table-joined",
-        buyInRange: currentTable.buyInRange,
-      }),
-    );
+    send(socket, {
+      event: "table-joined",
+      buyInRange: currentTable.buyInRange,
+    });
   };
 
   socket.onmessage = async (m) => {
@@ -106,22 +111,20 @@ export const handleJoinTable = async (ctx) => {
         const table = JSON.parse(await redisClient.hget("tables", tableID));
         table.players.push({ username, buyIn: data.payload });
         redisClient.hset("tables", tableID, JSON.stringify(table));
-        socket.send(
-          JSON.stringify({
-            event: "table-updated",
-            payload: {
-              tables: Array.from(tables),
-              table: table,
-            },
-            prompt: username + " bought in!",
-          }),
-        );
+        broadcast({
+          event: "table-updated",
+          payload: {
+            tables: Array.from(tables),
+            table: table,
+          },
+          prompt: username + " bought in!",
+        }, tableID);
         break;
     }
 
     //TODO: check the username is not taken and is not empty (only on login, not on join table)
 
-    console.log("message", data);
+    console.log("client message:", data);
   };
   socket.onclose = async () => {
     // TODO: withdraw nano to socket's wallet
@@ -129,14 +132,16 @@ export const handleJoinTable = async (ctx) => {
       `Client ${username || "is"} disconnected from table ${tableID}`,
     );
     connectedClients.delete(username);
+    sockets.delete(username);
     clearInterval(interval);
 
     //remove from tables
     const tables = new Map(
       JSON.parse(await redisClient.hget("tables", "cash")),
     );
-    const currentTable = tables.get(Number(tableID)) as Table;
-    currentTable.players = currentTable.players.filter((p) => p !== username);
+    const currentTable = tables?.get(Number(tableID)) as Table;
+    if (!currentTable) return;
+    currentTable.players = currentTable?.players.filter((p) => p !== username);
     tables.set(Number(tableID), currentTable);
     const tablesArray = Array.from(tables);
     redisClient.hset("tables", "cash", JSON.stringify(tablesArray));
@@ -161,5 +166,29 @@ export const handleJoinTable = async (ctx) => {
     // redisClient.hset("clients", "online", JSON.stringify(Array.from(clients)));
   };
 };
+
+// send a message to all connected clients
+function broadcast(message, tableID = null) {
+  sockets.forEach(
+    (socket, username) => {
+      if (!tableID) {
+        socket.send(
+          JSON.stringify(message),
+        );
+      }
+      if (tableID && tableIDs.get(username) === tableID) {
+        socket.send(
+          JSON.stringify(message),
+        );
+      }
+    },
+  );
+}
+
+function send(socket, message) {
+  socket.send(
+    JSON.stringify(message),
+  );
+}
 
 //Bell customer service 18006670123

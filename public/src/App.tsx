@@ -24,7 +24,7 @@ function joinTable() {
     if (!!data?.prompt) {
       setPrompts(data.prompt);
     }
-    console.log("message IN FRONTEND", data);
+    console.log(data);
     switch (data.event) {
       case "table-updated":
         setTableData(data.payload.table);
@@ -123,15 +123,16 @@ const Main: Component = () => {
       >
         Join Table
       </button>
-      <h1>
-        <b>{JSON.stringify(tableData())}</b>
-      </h1>
-      <section class="md:container md:mx-auto">
+      <section class="md:container md:mx-auto" style="padding-bottom: 25px;">
+        <h1 class="font-bold text-blue-300">
+          Current Table
+        </h1>
+        <p>{JSON.stringify(tableData())}</p>
+      </section>
+      <section class="md:container md:mx-auto" style="padding-bottom: 25px;">
         <h1 class="font-bold text-blue-300">Tables</h1>
         {JSON.stringify(tablesData())}
       </section>
-      <h1 class="font-bold text-blue-300">buy In</h1>
-      {JSON.stringify(buyInAmount())}
       <section class="md:container md:mx-auto">
         <h1 class="font-bold text-blue-300">Prompts</h1>
         {JSON.stringify(prompts())}
@@ -148,35 +149,4 @@ export default App;
 
 // // on page load
 // window.onload = () => {
-//   const username = document.getElementById("username") as HTMLInputElement;
-//   const serverSocket = new WebSocket(
-//     `ws://localhost:8080/join_table/212`,
-//   );
-// };
-
-// when the client hits the ENTER key
-// document.getElementById("data").addEventListener("keypress", (e) => {
-//   if (e.key === "Enter") {
-//     const inputElement = document.getElementById("data");
-//     const message = (inputElement as HTMLInputElement).value;
-//     (inputElement as HTMLInputElement).value = "";
-//     socket.send(
-//       JSON.stringify({
-//         event: "send-message",
-//         message,
-//       }),
-//     );
-//   }
-// });
-
-//   switch (data.event) {
-//     case "update-users":
-//     case "send-message":
-//       break;
-
-// function addMessage(username, message) {
-//   // displays new message
-//   // document.getElementById(
-//   //   "conversation",
-//   // ).innerHTML += `<b> ${username} </b>: ${message} <br/>`;
 // }

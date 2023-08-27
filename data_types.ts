@@ -25,6 +25,7 @@ export type Tournament = {
 };
 
 export type Table = {
+  type?: "cash" | "tournament";
   id?: number;
   name?: string;
   startedAt?: string;
