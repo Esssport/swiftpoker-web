@@ -1,13 +1,44 @@
 const connectedClients = new Map();
 const sockets = new Map();
 const tableIDs = new Map();
+const tablePlayers = new Map();
+
+const sampleTable = {
+  id: 1,
+  players: [{
+    username: "asghar",
+    buyIn: 100,
+    chips: 100,
+    folded: false,
+    allIn: false,
+    disconnected: false,
+    totalBet: 0,
+    currentBet: 0,
+    hand: [],
+    yourTurn: false,
+    played: false,
+
+    socket: {},
+  }],
+
+  lateRegistration: true,
+  running: false,
+  currentBet: 0,
+  pot: 0,
+  blinds: [10, 25],
+  buyInRange: [100, 500],
+  maxPlayers: 10,
+  type: "cash",
+};
+
 //have something like {username: tableID}
 import { Table } from "../data_types.ts";
 import { redisClient } from "../utils/getRedis.ts";
-
+import { startGame } from "../utils/Dealer.ts";
 export const handleJoinTable = async (ctx) => {
   let interval;
   const tables = new Map(JSON.parse(await redisClient.hget("tables", "cash")));
+  //FIXME: only create socket if the game has started. otherwise just add them to the table list
   const socket: WebSocket = await ctx.upgrade();
 
   const username = ctx.request.url.searchParams.get("username");
@@ -41,6 +72,15 @@ export const handleJoinTable = async (ctx) => {
     connectedClients.set(username, socket);
     sockets.set(username, socket);
     tableIDs.set(username, tableID);
+    if (!tablePlayers.has(tableID)) {
+      tablePlayers.set(tableID, [{ username, socket }]);
+    } else {
+      const recentTable = tablePlayers.get(tableID);
+      recentTable?.push({ username, socket });
+      tablePlayers.set(tableID, recentTable);
+    }
+    // console.log("tablePlayerssssssss", tablePlayers);
+
     //call all sockets to update their tables
 
     clients.set(username, socket);
@@ -54,9 +94,9 @@ export const handleJoinTable = async (ctx) => {
     );
     //FIXME: this is not working, not storing socket info, only the usrnames are stored
     redisClient.hset("clients", "atTable", JSON.stringify(Array.from(clients)));
-    console.log(`${username} connected to table ${tableID}`);
+    // console.log(`${username} connected to table ${tableID}`);
 
-    //update tables
+    //update tables TO BE REMOVED.
     currentTable.players.push(username);
     tables.set(Number(tableID), currentTable);
     const tablesArray = Array.from(tables);
@@ -102,6 +142,17 @@ export const handleJoinTable = async (ctx) => {
       event: "table-joined",
       buyInRange: currentTable.buyInRange,
     });
+
+    const interval = setInterval(() => {
+      // TODO: maybe account for disconnected players.
+      const playersMap = tablePlayers.get(tableID);
+      console.log("In the interval", playersMap);
+      if (playersMap.length >= 2) {
+        clearInterval(interval);
+        console.log("cleared interval");
+        startGame(username, tableID, playersMap);
+      }
+    }, 5000);
   };
 
   socket.onmessage = async (m) => {
@@ -119,13 +170,16 @@ export const handleJoinTable = async (ctx) => {
           },
           prompt: username + " bought in!",
         }, tableID);
+        // console.log("table", table);
         break;
     }
 
-    //TODO: check the username is not taken and is not empty (only on login, not on join table)
+    // 6475056596 pool cover
 
+    //TODO: check the username is not taken and is not empty (only on login, not on join table)
     console.log("client message:", data);
   };
+
   socket.onclose = async () => {
     // TODO: withdraw nano to socket's wallet
     console.log(
@@ -168,7 +222,7 @@ export const handleJoinTable = async (ctx) => {
 };
 
 // send a message to all connected clients
-function broadcast(message, tableID = null) {
+export const broadcast = (message, tableID = null) => {
   sockets.forEach(
     (socket, username) => {
       if (!tableID) {
@@ -183,12 +237,13 @@ function broadcast(message, tableID = null) {
       }
     },
   );
-}
+};
 
-function send(socket, message) {
+export const send = (socket, message) => {
+  // console.log("IN SEND", message);
   socket.send(
     JSON.stringify(message),
   );
-}
+};
 
 //Bell customer service 18006670123

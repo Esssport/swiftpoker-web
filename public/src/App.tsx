@@ -38,7 +38,6 @@ function joinTable() {
         const finalAmount = amount <= buyInRange[1] && amount >= buyInRange[0]
           ? amount
           : buyInRange[0];
-        setBuyInAmount(finalAmount);
         serverSocket.send(
           JSON.stringify({ event: "buy-in", payload: finalAmount }),
         );
@@ -84,7 +83,6 @@ function createTable() {
 
 const [tableData, setTableData] = createSignal({});
 const [tablesData, setTablesData] = createSignal(new Map());
-const [buyInAmount, setBuyInAmount] = createSignal(0);
 const [prompts, setPrompts] = createSignal([]);
 
 createEffect(() => {

@@ -1,3 +1,4 @@
+import { broadcast, send } from "../api/handleJoinTable.ts";
 const stack = [
   "2",
   "3",
@@ -45,7 +46,7 @@ const deck = [...spadeStack].concat([...heartStack]).concat([...diamondStack])
     ...clubStack,
   ]) as Card[];
 
-export function dealCards(players = 2) {
+export const dealCards = (players = 2) => {
   if (players < 2) {
     throw new Error("You need at least 2 players to play");
   }
@@ -58,4 +59,47 @@ export function dealCards(players = 2) {
     communityCards: shuffledDeck.slice(players * 2, players * 2 + 5),
   };
   return results;
-}
+};
+
+const allHands = [];
+let currentTableID = 0;
+//possibly get user with startGame to start the game only for that user,
+//check and see if the table is running, if not, start the game
+//if the table is running, then just send the cards to the user
+// can be named populateHands or prepare game
+export const startGame = async (username, tableID, players) => {
+  console.log("players", players);
+  if (tableID !== currentTableID) {
+    //do something
+  }
+  const playerNumber = players.length;
+  const results = dealCards(playerNumber);
+  console.log("results", results);
+  let i = 0;
+
+  // todo: update the players, then send the cards to each player
+  for (let i = 0; i < playerNumber; i++) {
+    const socket = players[i].socket;
+    const username = players[i].username;
+    const allHands = results.hands;
+    const userHand = [allHands[0], allHands[1]];
+    allHands.splice(0, 2);
+    console.log("username", username, userHand);
+    const eventObj = {
+      event: "game-started-private",
+      payload: {
+        hand: userHand,
+        // communitycards: results.communityCards,
+        player: username,
+      },
+    };
+
+    send(socket, eventObj);
+  }
+  broadcast({
+    event: "game-started",
+    payload: {
+      // communityCards: results.communityCards,
+    },
+  }, tableID);
+};

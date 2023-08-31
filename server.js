@@ -33,9 +33,8 @@ app.use(async (ctx, next) => {
   ctx.response.headers.set("X-Response-Time", `${ms}ms`);
 });
 
-// table listener
+// table listener, probably authenticator
 app.use(async (ctx, next) => {
-  console.log("table listener");
   ctx.state.test = "test";
   await next();
 });
