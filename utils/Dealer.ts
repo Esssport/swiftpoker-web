@@ -46,7 +46,8 @@ const deck = [...spadeStack].concat([...heartStack]).concat([...diamondStack])
     ...clubStack,
   ]) as Card[];
 
-export const dealCards = (players = 2) => {
+export const dealCards = (tableID, players = 2) => {
+  console.log("DEALING FOR", tableID, players);
   if (players < 2) {
     throw new Error("You need at least 2 players to play");
   }
@@ -61,45 +62,79 @@ export const dealCards = (players = 2) => {
   return results;
 };
 
-const allHands = [];
-let currentTableID = 0;
+const allHands = new Map<number, any>();
+const allHandsExample = [
+  {
+    tableID: 1,
+    players: [],
+    currentGame: {},
+  },
+  {
+    tableID: 2,
+    players: [],
+    currentGame: {},
+  },
+];
+const currentGame = {};
+let gameStarted = false;
+let cardsDealt = {};
 //possibly get user with startGame to start the game only for that user,
 //check and see if the table is running, if not, start the game
 //if the table is running, then just send the cards to the user
 // can be named populateHands or prepare game
-export const startGame = async (username, tableID, players) => {
-  console.log("players", players);
-  if (tableID !== currentTableID) {
+export const startGame = async (username, tableID, allPlayers: any[]) => {
+  // console.log("players", players);
+  if (!tableID || !allPlayers || allPlayers.length < 2) {
+    return;
     //do something
   }
+  let players = allPlayers;
   const playerNumber = players.length;
-  const results = dealCards(playerNumber);
-  console.log("results", results);
+  let tableHands = allHands.get(tableID);
+
+  if (!tableHands) {
+    const results = dealCards(tableID, playerNumber);
+    const res = allHands.set(tableID, results);
+    gameStarted = true;
+  }
+  console.log("allHands", username, allHands);
   let i = 0;
 
   // todo: update the players, then send the cards to each player
-  for (let i = 0; i < playerNumber; i++) {
-    const socket = players[i].socket;
-    const username = players[i].username;
-    const allHands = results.hands;
-    const userHand = [allHands[0], allHands[1]];
-    allHands.splice(0, 2);
-    console.log("username", username, userHand);
-    const eventObj = {
-      event: "game-started-private",
-      payload: {
-        hand: userHand,
-        // communitycards: results.communityCards,
-        player: username,
-      },
-    };
 
-    send(socket, eventObj);
-  }
-  broadcast({
+  const currentHands = allHands.get(tableID);
+  const handsCopy = [...currentHands.hands];
+  console.log("all hands", currentHands);
+  players = players.map((player: any) => {
+    if (player.hand && player.hand.length > 0) {
+      return player;
+    }
+    if (handsCopy.length < 2) {
+      return player;
+    }
+    player.hand = [handsCopy[0], handsCopy[1]];
+    player.communityCards = currentHands.communityCards;
+    handsCopy.splice(0, 2);
+    return player;
+  });
+  console.log("players", players);
+  const player = players.find((p) => p.username === username);
+
+  const eventObj = {
+    event: "game-started-private",
+    payload: {
+      hand: player.hand,
+      communitycards: player.communityCards,
+      player: username,
+    },
+  };
+  const socket = player.socket;
+  send(socket, eventObj);
+
+  send(socket, {
     event: "game-started",
     payload: {
       // communityCards: results.communityCards,
     },
-  }, tableID);
+  });
 };
