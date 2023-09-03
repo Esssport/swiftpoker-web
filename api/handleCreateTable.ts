@@ -25,8 +25,8 @@ export const handleCreateTable = async (ctx) => {
   const tableObj: Table = {
     id: tableNumber,
     players: [],
-    blinds: [10, 25],
-    buyInRange: [100, 500],
+    blinds: { small: 10, big: 25 },
+    buyInRange: { min: 100, max: 500 },
     maxPlayers: limitValue,
     type: "cash",
   };

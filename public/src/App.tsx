@@ -1,5 +1,4 @@
-import { type Component, createEffect, createSignal } from "solid-js";
-
+import { type Component, createSignal, onMount } from "solid-js";
 // TODO: Add the ability to reconnect to a table after getting disconnected store in local storage or a cookie
 function joinTable() {
   const username = document.getElementById("username") as HTMLInputElement;
@@ -24,7 +23,7 @@ function joinTable() {
     if (!!data?.prompt) {
       setPrompts(data.prompt);
     }
-    console.log(data);
+    console.log("data", data);
     switch (data.event) {
       case "table-updated":
         setTableData(data.payload.table);
@@ -41,6 +40,24 @@ function joinTable() {
         serverSocket.send(
           JSON.stringify({ event: "buy-in", payload: finalAmount }),
         );
+        break;
+      case "initial-bet":
+        //TODO: get bet range from server
+        if (!data.payload.yourTurn) {
+          break;
+        }
+        const betAmount = Number(prompt(
+          `bet between 10 and 100`,
+        ));
+        const finalBetAmount = !!betAmount ? betAmount : 10;
+        serverSocket.send(
+          //TODO: include userID in payload potentially
+          JSON.stringify({ event: "bet", payload: finalBetAmount }),
+        );
+        break;
+      case "flop-shown":
+        setHandData(data.payload.hand);
+        setFlop(data.payload.flop);
         break;
     }
   };
@@ -84,8 +101,10 @@ function createTable() {
 const [tableData, setTableData] = createSignal({});
 const [tablesData, setTablesData] = createSignal(new Map());
 const [prompts, setPrompts] = createSignal([]);
+const [handData, setHandData] = createSignal([]);
+const [flop, setFlop] = createSignal([]);
 
-createEffect(() => {
+onMount(() => {
   getTableData();
   getTablesData();
 });
@@ -121,6 +140,18 @@ const Main: Component = () => {
       >
         Join Table
       </button>
+      <section class="md:container md:mx-auto" style="padding-bottom: 25px;">
+        <h1 class="font-bold text-blue-300">
+          Current Hand
+        </h1>
+        <p>{JSON.stringify(handData())}</p>
+      </section>
+      <section class="md:container md:mx-auto" style="padding-bottom: 25px;">
+        <h1 class="font-bold text-blue-300">
+          Community cards
+        </h1>
+        <p>{JSON.stringify(flop())}</p>
+      </section>
       <section class="md:container md:mx-auto" style="padding-bottom: 25px;">
         <h1 class="font-bold text-blue-300">
           Current Table

@@ -1,40 +1,18 @@
 const connectedClients = new Map();
 const sockets = new Map();
 const tableIDs = new Map();
-const tablePlayers = new Map();
 
-const sampleTable = {
-  id: 1,
-  players: [{
-    username: "asghar",
-    buyIn: 100,
-    chips: 100,
-    folded: false,
-    allIn: false,
-    disconnected: false,
-    totalBet: 0,
-    currentBet: 0,
-    hand: [],
-    yourTurn: false,
-    played: false,
-
-    socket: {},
-  }],
-
-  lateRegistration: true,
-  running: false,
-  currentBet: 0,
-  pot: 0,
-  blinds: [10, 25],
-  buyInRange: [100, 500],
-  maxPlayers: 10,
-  type: "cash",
-};
+//TODO: use const table = new Map() and pass that around.
+//TODO: refactor to use Table instead of tables
 
 //have something like {username: tableID}
 import { Table } from "../data_types.ts";
 import { redisClient } from "../utils/getRedis.ts";
 import { startGame } from "../utils/Dealer.ts";
+//TODO: add proper types
+
+const tablePlayers = new Map();
+
 export const handleJoinTable = async (ctx) => {
   let interval;
   const tables = new Map(JSON.parse(await redisClient.hget("tables", "cash")));
@@ -145,12 +123,13 @@ export const handleJoinTable = async (ctx) => {
 
     const interval = setInterval(() => {
       // TODO: maybe account for disconnected players.
-      const playersMap = tablePlayers.get(tableID);
-      console.log("In the interval", playersMap);
-      if (playersMap.length >= 2) {
+      const allPlayers = tablePlayers.get(tableID);
+      const table = tables.get(Number(tableID));
+      console.log("In the interval", allPlayers);
+      if (allPlayers.length >= 3) {
         clearInterval(interval);
         console.log("cleared interval");
-        startGame(username, tableID, playersMap);
+        startGame(username, tableID, allPlayers, table);
       }
     }, 5000);
   };
