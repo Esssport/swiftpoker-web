@@ -65,7 +65,7 @@ export const handleJoinTable = async (ctx) => {
     });
 
     const interval = setInterval(() => {
-      // TODO: maybe account for disconnected players.
+      // TODO: maybe consider disconnected players.
       const table = serverTables.get(tableID);
       if (currentPlayers.length >= 3) {
         clearInterval(interval);

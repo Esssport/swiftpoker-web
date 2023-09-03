@@ -3,18 +3,6 @@ import { broadcast, send } from "../api/handleJoinTable.ts";
 import { Card, Player, Table } from "../data_types.ts";
 
 const allHands = new Map<number, any>();
-const allHandsExample = [
-  {
-    tableID: 1,
-    players: [],
-    currentGame: {},
-  },
-  {
-    tableID: 2,
-    players: [],
-    currentGame: {},
-  },
-];
 let gameStarted = false;
 let currentPosition = 2; // start at 2 because 0 and 1 are the blinds.
 //possibly get user with startGame to start the game only for that user,
@@ -26,11 +14,10 @@ export const startGame = async (
   tableID,
   table: Table,
 ) => {
-  const allPlayers = table.players;
-  if (!tableID || !allPlayers || allPlayers.length < 2) {
+  const players = table.players;
+  if (!tableID || !players || players.length < 2) {
     return;
   }
-  let players = allPlayers;
   const playerNumber = players.length;
   let tableHands = allHands.get(tableID);
 
@@ -41,13 +28,16 @@ export const startGame = async (
     gameStarted = true;
   }
 
-  players = populateHands(tableID, players);
-  players = determinePositions(players);
+  populateHands(tableID, players);
+  determinePositions(players);
   // players = takeBlinds(players);
-  players = players.map((player) => {
+  players.forEach((player) => {
     if (player.position === 0) {
       console.log("TABLE", table);
-      player.currentBet = 10;
+      player.currentBet = table.blinds.small;
+    }
+    if (player.position === 1) {
+      player.currentBet = table.blinds.big;
     }
     return player;
   });
@@ -93,11 +83,15 @@ export const startGame = async (
   send(socket, eventObj);
 };
 
-const populateHands = (tableID, players, stage = null) => {
+const populateHands = (
+  tableID: number,
+  players: Player[],
+  stage: string = null,
+) => {
   const currentCards = allHands.get(tableID);
   const handsCopy = [...currentCards.hands];
   console.log("all hands", currentCards);
-  return players.map((player: any) => {
+  return players.forEach((player: Player) => {
     if (!!stage) {
       player[stage] = currentCards[stage];
     }
@@ -114,7 +108,7 @@ const populateHands = (tableID, players, stage = null) => {
 };
 
 const determinePositions = (players: Player[], nextRound = false) => {
-  return players.map((player, i) => {
+  return players.forEach((player, i) => {
     if (nextRound) {
       player.position = player.position + 1;
       if (player.position >= players.length - 1) {
