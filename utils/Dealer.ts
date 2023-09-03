@@ -24,9 +24,9 @@ let currentPosition = 2; // start at 2 because 0 and 1 are the blinds.
 export const startGame = async (
   username,
   tableID,
-  allPlayers: Player[],
   table: Table,
 ) => {
+  const allPlayers = table.players;
   if (!tableID || !allPlayers || allPlayers.length < 2) {
     return;
   }

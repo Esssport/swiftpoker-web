@@ -1,4 +1,4 @@
-import { type Component, createSignal, onMount } from "solid-js";
+import { type Component, createEffect, createSignal, onMount } from "solid-js";
 // TODO: Add the ability to reconnect to a table after getting disconnected store in local storage or a cookie
 function joinTable() {
   const username = document.getElementById("username") as HTMLInputElement;
@@ -27,16 +27,17 @@ function joinTable() {
     switch (data.event) {
       case "table-updated":
         setTableData(data.payload.table);
+        setTablesData(data.payload.tables);
         break;
       case "table-joined":
         const buyInRange = data.buyInRange;
         //Prompt user to buy in within the range of the table
         const amount = Number(prompt(
-          `Buy in between ${buyInRange[0]} and ${buyInRange[1]}`,
+          `Buy in between ${buyInRange.min} and ${buyInRange.max}`,
         ));
-        const finalAmount = amount <= buyInRange[1] && amount >= buyInRange[0]
+        const finalAmount = amount <= buyInRange.max && amount >= buyInRange.min
           ? amount
-          : buyInRange[0];
+          : buyInRange.min;
         serverSocket.send(
           JSON.stringify({ event: "buy-in", payload: finalAmount }),
         );
@@ -91,6 +92,7 @@ function createTable() {
     },
   );
   fetch(request).then((response) => {
+    console.log("message", response);
     response.json().then((data) => {
       setTablesData(data);
     });
@@ -99,12 +101,12 @@ function createTable() {
 }
 
 const [tableData, setTableData] = createSignal({});
-const [tablesData, setTablesData] = createSignal(new Map());
+const [tablesData, setTablesData] = createSignal([]);
 const [prompts, setPrompts] = createSignal([]);
 const [handData, setHandData] = createSignal([]);
 const [flop, setFlop] = createSignal([]);
 
-onMount(() => {
+createEffect(() => {
   getTableData();
   getTablesData();
 });

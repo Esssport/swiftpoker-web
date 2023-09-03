@@ -1,9 +1,7 @@
-import { redisClient } from "../utils/getRedis.ts";
-
-let table = new Map();
+import { Table } from "../data_types.ts";
 
 export const handleTable = async (ctx) => {
   const id = ctx.params.id || 1;
-  const previousTable = await redisClient.hget("tables", id);
-  return ctx.response.body = previousTable || {};
+  const serverTables = ctx.state.tables as Map<number, Table>;
+  return ctx.response.body = JSON.stringify(Array.from(serverTables)) || {};
 };

@@ -1,18 +1,17 @@
 export type Player = {
-  hand: Card[];
-  yourTurn: boolean;
+  hand?: Card[];
+  yourTurn?: boolean;
   id?: number;
   socket?: WebSocket;
-  buyIn: number;
-  chips: number;
-  folded: boolean;
-  allIn: boolean;
-  disconnected: boolean;
-  totalBet: number;
-  currentBet: number;
-  played: boolean;
+  buyIn?: number;
+  chips?: number;
+  folded?: boolean;
+  allIn?: boolean;
+  disconnected?: boolean;
+  totalBet?: number;
+  currentBet?: number;
+  played?: boolean;
   flop?: Card[];
-
   turn?: Card;
   river?: Card;
   username?: string;

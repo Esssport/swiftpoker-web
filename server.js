@@ -8,6 +8,8 @@ import { handleTable } from "./api/handleTable.ts";
 const app = new Application();
 const router = new Router();
 const port = 8080;
+const serverTables = new Map();
+// const allUsers = new Map();
 
 router.get("/tables/create", handleCreateTable);
 router.get("/tables/join/:tableID", handleJoinTable);
@@ -35,7 +37,7 @@ app.use(async (ctx, next) => {
 
 // table listener, probably authenticator
 app.use(async (ctx, next) => {
-  ctx.state.test = "test";
+  ctx.state.tables = serverTables;
   await next();
 });
 
