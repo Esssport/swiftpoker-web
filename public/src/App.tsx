@@ -42,21 +42,20 @@ function joinTable() {
           JSON.stringify({ event: "buy-in", payload: finalAmount }),
         );
         break;
-      case "initial-bet":
+      case "bet":
         //TODO: get bet range from server
         if (!data.payload.yourTurn) {
           break;
         }
+        const payload = data.payload;
         const betAmount = Number(prompt(
-          `bet between 10 and 100`,
+          `bet between ${payload.blinds.big} and ${payload.chips}`,
         ));
-        const finalBetAmount = !!betAmount ? betAmount : 10;
+        const finalBetAmount = !!betAmount ? betAmount : payload.blinds.big;
         serverSocket.send(
           //TODO: include userID in payload potentially
           JSON.stringify({ event: "bet", payload: finalBetAmount }),
         );
-        break;
-      case "flop-shown":
         setHandData(data.payload.hand);
         setFlop(data.payload.flop);
         break;

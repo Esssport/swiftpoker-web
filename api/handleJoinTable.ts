@@ -67,7 +67,7 @@ export const handleJoinTable = async (ctx) => {
     const interval = setInterval(() => {
       // TODO: maybe consider disconnected players.
       const table = serverTables.get(tableID);
-      if (currentPlayers.length >= 3) {
+      if (currentPlayers.length >= 4) {
         clearInterval(interval);
         console.log("cleared interval");
         startGame(username, tableID, currentTable);

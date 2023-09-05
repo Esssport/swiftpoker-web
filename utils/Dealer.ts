@@ -1,14 +1,17 @@
 //move send and broadcast to utils
 import { broadcast, send } from "../api/handleJoinTable.ts";
 import { Card, Player, Table } from "../data_types.ts";
+const allGameStates = new Map<
+  number,
+  {
+    activePosition: number;
+    stage: string;
+    hands: { hands: Card[]; flop: Card[]; turn: Card; river: Card };
+    gameStarted: boolean;
+    newGame: boolean;
+  }
+>();
 
-const allHands = new Map<number, any>();
-let gameStarted = false;
-let currentPosition = 2; // start at 2 because 0 and 1 are the blinds.
-//possibly get user with startGame to start the game only for that user,
-//check and see if the table is running, if not, start the game
-//if the table is running, then just send the cards to the user
-// can be named populateHands or prepare game
 export const startGame = async (
   username,
   tableID,
@@ -18,79 +21,172 @@ export const startGame = async (
   if (!tableID || !players || players.length < 2) {
     return;
   }
-  const playerNumber = players.length;
-  let tableHands = allHands.get(tableID);
+  const player = players.find((p) => p.username === username);
 
-  // also run if the game has ended, for next round
-  if (!tableHands) {
-    const results = dealCards(tableID, playerNumber);
-    const res = allHands.set(tableID, results);
-    gameStarted = true;
+  if (!allGameStates.has(tableID)) {
+    allGameStates.set(tableID, {
+      activePosition: 0,
+      stage: "preflop",
+      hands: null,
+      gameStarted: false,
+      newGame: true,
+    });
   }
 
-  populateHands(tableID, players);
-  determinePositions(players);
-  // players = takeBlinds(players);
-  players.forEach((player) => {
-    if (player.position === 0) {
-      console.log("TABLE", table);
-      player.currentBet = table.blinds.small;
-    }
-    if (player.position === 1) {
-      player.currentBet = table.blinds.big;
-    }
-    return player;
-  });
-  console.log("DEBUGGING PLAYERS", players);
-  const player = players.find((p) => p.username === username);
-  //handle bets
-  const initialBetEvent = {
-    event: "initial-bet",
-    payload: {
-      yourTurn: currentPosition === player.position,
-      waitingFor: currentPosition,
-    },
-    prompt: "Seat " + currentPosition + " Waiting for " +
-      players[currentPosition].username +
-      " to bet",
-  };
+  next(table);
+
   player.socket.onmessage = (m) => {
     const data = JSON.parse(m.data);
+    const gameState = allGameStates.get(table.id);
     console.log("onmessage", data);
     switch (data.event) {
       case "bet":
-        console.log("bet", data);
-        player.currentBet = data.payload;
+        placeBet(table, player, data.payload);
         break;
     }
-    console.log("players", players);
   };
 
-  send(player.socket, initialBetEvent);
-
-  // players = populateHands(tableID, players, "flop");
-
-  const eventObj = {
-    event: "flop-shown",
-    payload: {
-      hand: player.hand,
-      flop: player.flop,
-      //TO be removed
-      player: username,
-    },
-  };
-  const socket = player.socket;
-  send(socket, eventObj);
+  // const socket = player.socket;
+  // send(socket, eventObj);
 };
 
+const next = (table: Table) => {
+  const gameState = allGameStates.get(table.id);
+  const players = table.players;
+  let player = players.find((p) => p.position === gameState.activePosition);
+  //next round of cards
+
+  if (gameState.newGame = true) {
+    gameState.newGame = false;
+    populateHands(table.id, players);
+    determinePositions(players);
+    if (!player) {
+      player = players.find((p) => p.position === gameState.activePosition);
+    }
+    if (player.position === 0 && gameState.activePosition === 0) {
+      placeBet(table, player, table.blinds.small);
+      return;
+    }
+    if (player.position === 1 && gameState.activePosition === 1) {
+      placeBet(table, player, table.blinds.big);
+      return;
+    }
+    // if (player.position === 2 && gameState.activePosition === 2) {
+    //   console.log("PROMPTED IN THE NEW GAME");
+    //   promptBet(table, player.username);
+    //   return;
+    // }
+  }
+
+  // if (!gameState.newGame && gameState.activePosition !== player.position) {
+  //   return;
+  // }
+
+  console.log(
+    "ActivePosition, playerPosition",
+    gameState.activePosition,
+    player.position,
+  );
+  if (gameState.activePosition <= players.length) {
+    promptBet(table, player.username);
+    return;
+  }
+
+  if (gameState.activePosition > players.length) {
+    const stage = gameState.stage;
+    gameState.activePosition = 0;
+
+    //update gameStage
+    switch (stage) {
+      case "preflop":
+        gameState.stage = "flop";
+        break;
+      case "flop":
+        gameState.stage = "turn";
+        break;
+      case "turn":
+        gameState.stage = "river";
+        break;
+      case "river":
+        gameState.stage = "showdown";
+        break;
+      default:
+        gameState.stage = "preflop";
+    }
+    //show next card
+
+    if (gameState.stage === "showdown") {
+      //showdown
+      gameState.activePosition = 0; //reset to the person after the big blind
+      gameState.newGame = true;
+
+      //TODO: determine winner
+      console.log("THE TRUE WINNER IS YOU!");
+      return;
+    }
+    populateHands(table.id, players, gameState.stage);
+    next(table);
+    return;
+  }
+  return;
+};
+
+const promptBet = (table: Table, username: string) => {
+  //TODO: set a timer for folding if no bet is placed
+  const gameState = allGameStates.get(table.id);
+  //handle bets
+  const players = table.players;
+  const player = players.find((p) => p.position === gameState.activePosition);
+  // const player = players.find((p) => p.username === username);
+  console.log("prompting", username, player);
+  if (!player || player.username !== username) return;
+
+  const yourTurn = gameState.activePosition === player.position;
+  console.log("yourTurn", yourTurn);
+  const betPrompt = {
+    event: "bet",
+    payload: {
+      yourTurn: yourTurn,
+      waitingFor: gameState.activePosition,
+      blinds: table.blinds,
+      chips: player.chips,
+    },
+  };
+  send(player.socket, betPrompt);
+  return;
+};
+
+const placeBet = (table: Table, player: Player, bet: number) => {
+  const gameState = allGameStates.get(table.id);
+  //TODO: check if the bet is valid
+  player.currentBet = bet;
+  player.chips = player.chips - bet;
+  table.pot = table.pot + bet;
+  console.log(`BET PLACED for ${player.username}, STATE`, {
+    ...allGameStates.get(table.id),
+    hands: null,
+  });
+  gameState.activePosition = gameState.activePosition + 1;
+  next(table);
+};
+
+//maybe add a parameter to dealNew
 const populateHands = (
   tableID: number,
   players: Player[],
   stage: string = null,
 ) => {
-  const currentCards = allHands.get(tableID);
+  let gameState = allGameStates.get(tableID);
+  let tableHands = gameState.hands;
+  // also run if the game has ended, for next round
+  if (!tableHands || gameState.newGame) {
+    const results = dealCards(tableID, players.length);
+    gameState.hands = results;
+    gameState.gameStarted = true;
+    gameState.newGame = false;
+  }
+  const currentCards = gameState.hands;
   const handsCopy = [...currentCards.hands];
-  console.log("all hands", currentCards);
   return players.forEach((player: Player) => {
     if (!!stage) {
       player[stage] = currentCards[stage];
@@ -116,7 +212,6 @@ const determinePositions = (players: Player[], nextRound = false) => {
         player.position = 0;
       }
     }
-    console.log(typeof player.position, player.position, i);
     if (player.position !== undefined) {
       return player;
     } else {

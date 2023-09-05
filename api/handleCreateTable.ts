@@ -21,10 +21,11 @@ export const handleCreateTable = async (
     blinds: { small: 10, big: 25 },
     buyInRange: { min: 100, max: 500 },
     maxPlayers: limitValue,
+    pot: 0,
     type: "cash",
   };
 
   serverTables.set(tableNumber, tableObj);
-  console.log("IN CREATE TABLE", serverTables);
+  console.log("Table created", serverTables);
   ctx.response.body = JSON.stringify(Array.from(serverTables));
 };
