@@ -37,7 +37,7 @@ export const startGame = async (
   }
   const player = players.find((p) => p.username === username);
 
-  next(table);
+  next(table, username);
 
   player.socket.onmessage = (m) => {
     const data = JSON.parse(m.data);
@@ -45,7 +45,7 @@ export const startGame = async (
     console.log("onmessage", data);
     switch (data.event) {
       case "bet":
-        placeBet(table, player, data.payload);
+        placeBet(table, player, data.payload, username);
         break;
     }
   };
@@ -54,7 +54,7 @@ export const startGame = async (
   // send(socket, eventObj);
 };
 
-const next = (table: Table) => {
+const next = (table: Table, username?: string) => {
   const gameState = allGameStates.get(table.id);
   const players = table.players;
   let player = players.find((p) => p.position === gameState.activePosition);
@@ -95,9 +95,15 @@ const next = (table: Table) => {
     }
 
     populateHands(table.id, players, gameState.stage);
-    next(table);
+    next(table, username);
     return;
   }
+
+  if (!player) {
+    gameState.activePosition = 0;
+    player = players.find((p) => p.position === gameState.activePosition);
+  }
+  if (!username) username = player.username;
 
   if (gameState.newGame = true) {
     gameState.newGame = false;
@@ -111,7 +117,7 @@ const next = (table: Table) => {
       player.position === 0 && gameState.activePosition === 0 &&
       !gameState.smallBlindPlayed
     ) {
-      placeBet(table, player, table.blinds.small);
+      placeBet(table, player, table.blinds.small, username);
       gameState.smallBlindPlayed = true;
       return;
     }
@@ -119,13 +125,15 @@ const next = (table: Table) => {
       player.position === 1 && gameState.activePosition === 1 &&
       !gameState.bigBlindPlayed
     ) {
-      placeBet(table, player, table.blinds.big);
+      placeBet(table, player, table.blinds.big, username);
       gameState.bigBlindPlayed = true;
       return;
     }
   }
 
-  if (gameState.activePosition <= players.length) {
+  if (
+    gameState.activePosition <= players.length && player.username === username
+  ) {
     promptBet(table, player.username);
     return;
   }
@@ -153,7 +161,12 @@ const promptBet = (table: Table, username: string) => {
   return;
 };
 
-const placeBet = (table: Table, player: Player, bet: number) => {
+const placeBet = (
+  table: Table,
+  player: Player,
+  bet: number,
+  username: string,
+) => {
   const gameState = allGameStates.get(table.id);
   //TODO: check if the bet is valid
   player.currentBet = bet;

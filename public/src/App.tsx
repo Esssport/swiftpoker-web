@@ -43,10 +43,9 @@ function joinTable() {
         );
         break;
       case "bet":
-        //TODO: get bet range from server
-        if (!data.payload.yourTurn) {
-          break;
-        }
+        // if (!data.payload.yourTurn) {
+        //   break;
+        // }
         const payload = data.payload;
         const betAmount = Number(prompt(
           `bet between ${payload.blinds.big} and ${payload.chips}`,
