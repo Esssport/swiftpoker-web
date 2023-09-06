@@ -9,6 +9,8 @@ const allGameStates = new Map<
     hands: { hands: Card[]; flop: Card[]; turn: Card; river: Card };
     gameStarted: boolean;
     newGame: boolean;
+    smallBlindPlayed: boolean;
+    bigBlindPlayed: boolean;
   }
 >();
 
@@ -21,7 +23,6 @@ export const startGame = async (
   if (!tableID || !players || players.length < 2) {
     return;
   }
-  const player = players.find((p) => p.username === username);
 
   if (!allGameStates.has(tableID)) {
     allGameStates.set(tableID, {
@@ -30,8 +31,11 @@ export const startGame = async (
       hands: null,
       gameStarted: false,
       newGame: true,
+      smallBlindPlayed: false,
+      bigBlindPlayed: false,
     });
   }
+  const player = players.find((p) => p.username === username);
 
   next(table);
 
@@ -55,44 +59,7 @@ const next = (table: Table) => {
   const players = table.players;
   let player = players.find((p) => p.position === gameState.activePosition);
   //next round of cards
-
-  if (gameState.newGame = true) {
-    gameState.newGame = false;
-    populateHands(table.id, players);
-    determinePositions(players);
-    if (!player) {
-      player = players.find((p) => p.position === gameState.activePosition);
-    }
-    if (player.position === 0 && gameState.activePosition === 0) {
-      placeBet(table, player, table.blinds.small);
-      return;
-    }
-    if (player.position === 1 && gameState.activePosition === 1) {
-      placeBet(table, player, table.blinds.big);
-      return;
-    }
-    // if (player.position === 2 && gameState.activePosition === 2) {
-    //   console.log("PROMPTED IN THE NEW GAME");
-    //   promptBet(table, player.username);
-    //   return;
-    // }
-  }
-
-  // if (!gameState.newGame && gameState.activePosition !== player.position) {
-  //   return;
-  // }
-
-  console.log(
-    "ActivePosition, playerPosition",
-    gameState.activePosition,
-    player.position,
-  );
-  if (gameState.activePosition <= players.length) {
-    promptBet(table, player.username);
-    return;
-  }
-
-  if (gameState.activePosition > players.length) {
+  if (gameState.activePosition > players.length - 1) {
     const stage = gameState.stage;
     gameState.activePosition = 0;
 
@@ -118,14 +85,48 @@ const next = (table: Table) => {
     if (gameState.stage === "showdown") {
       //showdown
       gameState.activePosition = 0; //reset to the person after the big blind
-      gameState.newGame = true;
+      // gameState.newGame = true;
 
       //TODO: determine winner
       console.log("THE TRUE WINNER IS YOU!");
+      gameState.smallBlindPlayed = false;
+      gameState.bigBlindPlayed = false;
       return;
     }
+
     populateHands(table.id, players, gameState.stage);
     next(table);
+    return;
+  }
+
+  if (gameState.newGame = true) {
+    gameState.newGame = false;
+    populateHands(table.id, players);
+    determinePositions(players);
+    if (!player) {
+      console.log("NEWGAME activePosition", gameState.activePosition);
+      player = players.find((p) => p.position === gameState.activePosition);
+    }
+    if (
+      player.position === 0 && gameState.activePosition === 0 &&
+      !gameState.smallBlindPlayed
+    ) {
+      placeBet(table, player, table.blinds.small);
+      gameState.smallBlindPlayed = true;
+      return;
+    }
+    if (
+      player.position === 1 && gameState.activePosition === 1 &&
+      !gameState.bigBlindPlayed
+    ) {
+      placeBet(table, player, table.blinds.big);
+      gameState.bigBlindPlayed = true;
+      return;
+    }
+  }
+
+  if (gameState.activePosition <= players.length) {
+    promptBet(table, player.username);
     return;
   }
   return;
@@ -137,16 +138,12 @@ const promptBet = (table: Table, username: string) => {
   //handle bets
   const players = table.players;
   const player = players.find((p) => p.position === gameState.activePosition);
-  // const player = players.find((p) => p.username === username);
-  console.log("prompting", username, player);
-  if (!player || player.username !== username) return;
 
-  const yourTurn = gameState.activePosition === player.position;
-  console.log("yourTurn", yourTurn);
+  if (!player || player.username !== username) return;
+  console.log("prompting", username);
   const betPrompt = {
     event: "bet",
     payload: {
-      yourTurn: yourTurn,
       waitingFor: gameState.activePosition,
       blinds: table.blinds,
       chips: player.chips,
@@ -162,7 +159,7 @@ const placeBet = (table: Table, player: Player, bet: number) => {
   player.currentBet = bet;
   player.chips = player.chips - bet;
   table.pot = table.pot + bet;
-  console.log(`BET PLACED for ${player.username}, STATE`, {
+  console.log(`${bet} BET PLACED for ${player.username}, STATE`, {
     ...allGameStates.get(table.id),
     hands: null,
   });
