@@ -67,6 +67,7 @@ export type Table = {
 export type Card = Map<string, {
   suit: string;
   value: number;
+  rank?: number;
   name?: string;
   image?: string;
 }>;

@@ -11,6 +11,8 @@ const allGameStates = new Map<
     newGame: boolean;
     smallBlindPlayed: boolean;
     bigBlindPlayed: boolean;
+    promptingFor: string;
+    highestBet: number;
   }
 >();
 
@@ -33,6 +35,8 @@ export const startGame = async (
       newGame: true,
       smallBlindPlayed: false,
       bigBlindPlayed: false,
+      promptingFor: null,
+      highestBet: 0,
     });
   }
   const player = players.find((p) => p.username === username);
@@ -143,11 +147,14 @@ const next = (table: Table, username?: string) => {
 const promptBet = (table: Table, username: string) => {
   //TODO: set a timer for folding if no bet is placed
   const gameState = allGameStates.get(table.id);
+  if (gameState.promptingFor === username) return;
   //handle bets
+  //TODO: Prompt any user who has not folded or isn't equal to the highest bet
   const players = table.players;
   const player = players.find((p) => p.position === gameState.activePosition);
 
   if (!player || player.username !== username) return;
+  gameState.promptingFor = username;
   console.log("prompting", username);
   const betPrompt = {
     event: "bet",
@@ -172,12 +179,16 @@ const placeBet = (
   player.currentBet = bet;
   player.chips = player.chips - bet;
   table.pot = table.pot + bet;
-  console.log(`${bet} BET PLACED for ${player.username}, STATE`, {
-    ...allGameStates.get(table.id),
-    hands: null,
-  });
+  console.log(
+    `${bet} BET PLACED for ${player.username}, STATE`,
+    allGameStates.get(table.id),
+  );
+  console.log("TABLE:", table);
+
   gameState.activePosition = gameState.activePosition + 1;
+  gameState.promptingFor = null;
   next(table);
+  return;
 };
 
 //maybe add a parameter to dealNew
@@ -247,6 +258,22 @@ const stack = [
   "A",
 ];
 
+const names = [
+  "Duce",
+  "Three",
+  "Four",
+  "Five",
+  "Six",
+  "Seven",
+  "Eight",
+  "Nine",
+  "Ten",
+  "Jack",
+  "Queen",
+  "King",
+  "Ace",
+];
+
 function shuffle(array: any[]): Card[] {
   return array
     .map((value) => ({ value, sort: Math.random() }))
@@ -257,19 +284,20 @@ function shuffle(array: any[]): Card[] {
 const spadeStack = stack.map((
   card,
   i,
-) => ["S" + card, { value: i, suit: "Spades" }]);
+  //POTENTIALLY set rank as i + 2
+) => ["S" + card, { rank: i + 1, name: names[i], suit: "Spades" }]);
 const heartStack = stack.map((
   card,
   i,
-) => ["H" + card, { value: i, suit: "Hearts" }]);
+) => ["H" + card, { rank: i + 1, name: names[i], suit: "Hearts" }]);
 const diamondStack = stack.map((
   card,
   i,
-) => ["D" + card, { value: i, suit: "Diamonds" }]);
+) => ["D" + card, { rank: i + 1, name: names[i], suit: "Diamonds" }]);
 const clubStack = stack.map((
   card,
   i,
-) => ["C" + card, { value: i, suit: "Clubs" }]);
+) => ["C" + card, { rank: i + 1, name: names[i], suit: "Clubs" }]);
 
 const deck = [...spadeStack].concat([...heartStack]).concat([...diamondStack])
   .concat([
