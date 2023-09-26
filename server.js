@@ -13,7 +13,8 @@ const serverTables = new Map();
 
 router.get("/tables/create", handleCreateTable);
 router.get("/tables/join/:tableID", handleJoinTable);
-router.get("/tables", handleTables);
+router.get("/tables", handleCreateTable);
+// router.get("/tables", handleTables);
 router.get("/tables/:tableID", handleTable);
 //router.get("/users/", handleJoinTable);
 //router.get("/users/userID", handleJoinTable);
