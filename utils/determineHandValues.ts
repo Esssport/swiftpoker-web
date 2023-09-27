@@ -62,7 +62,6 @@ export const determineHandValues = (table: Table, state): any[] => {
       const previousCardObj = previousCard[1];
       const cardObj = card[1];
       cardNumber += 1;
-      //Determine flush for straight flush;
 
       // Determine flush streaks
       switch (previousCardObj.suit) {
@@ -80,6 +79,23 @@ export const determineHandValues = (table: Table, state): any[] => {
           break;
       }
 
+      if (cardNumber === 6) {
+        switch (cardObj.suit) {
+          case "Clubs":
+            streaks.suits.clubs += 1;
+            break;
+          case "Diamonds":
+            streaks.suits.diamonds += 1;
+            break;
+          case "Hearts":
+            streaks.suits.hearts += 1;
+            break;
+          case "Spades":
+            streaks.suits.spades += 1;
+            break;
+        }
+      }
+
       if (previousCardObj.suit === cardObj.suit) {
         streaks.straightFlush += 1;
       } else {
@@ -93,7 +109,7 @@ export const determineHandValues = (table: Table, state): any[] => {
       } else {
         streaks.straight = 1;
       }
-      if (cardObj.rank === 13) {
+      if (previousCardObj.rank === 13 || cardObj.rank === 13) {
         streaks.hasAce = true;
         streaks.aceSuits.push(cardObj.suit);
       }
@@ -101,8 +117,7 @@ export const determineHandValues = (table: Table, state): any[] => {
       if (streaks.straight === 5 && streaks.straightFlush === 5) {
         let handType = "Straight Flush";
         let score = 9;
-        //TODO: need to be based on rank
-        if (cardObj.name === "Ten") {
+        if (cardObj.rank === 9) {
           handType = "Royal Flush";
           score = 10;
         }
@@ -154,7 +169,6 @@ export const determineHandValues = (table: Table, state): any[] => {
         setHandType(card, results, "Four of a Kind", i, {
           score: 8,
           cards,
-          highCards,
         });
       }
 
@@ -166,15 +180,21 @@ export const determineHandValues = (table: Table, state): any[] => {
           //It's a four of a kind
           return card;
         }
-        streaks.triple = streaks.currentPair;
+        if (streaks.triple.length === 0) {
+          streaks.triple = streaks.currentPair;
+        }
       }
       if (streaks.ofAKind === 2) {
         if (
-          hand[cardNumber + 1] && hand[cardNumber + 1][1].rank === cardObj.rank
+          hand[cardNumber + 1] &&
+          hand[cardNumber + 1][1].rank === cardObj.rank &&
+          streaks.triple.length === 0
         ) {
           return card;
         }
-        streaks.double = streaks.currentPair;
+        if (streaks.double.length === 0) {
+          streaks.double = streaks.currentPair.splice(0, 2);
+        }
 
         if (streaks.firstPair.length === 0) {
           streaks.firstPair = streaks.currentPair;
@@ -188,26 +208,6 @@ export const determineHandValues = (table: Table, state): any[] => {
           triple: streaks.triple,
           double: streaks.double,
           cards: [...streaks.triple, ...streaks.double],
-        });
-      }
-
-      //Determine flush
-      if (
-        streaks.suits.clubs === 5 || streaks.suits.diamonds === 5 ||
-        streaks.suits.hearts === 5 || streaks.suits.spades === 5
-      ) {
-        let suit = streaks.suits.clubs === 5 ? "Clubs" : "";
-        suit = streaks.suits.diamonds === 5 ? "Diamonds" : suit;
-        suit = streaks.suits.hearts === 5 ? "Hearts" : suit;
-        suit = streaks.suits.spades === 5 ? "Spades" : suit;
-        const cards = hand.filter((card) => {
-          return card[1].suit === suit;
-        });
-
-        setHandType(card, results, "Flush", i, {
-          score: 6,
-          suit,
-          cards,
         });
       }
 
@@ -248,7 +248,6 @@ export const determineHandValues = (table: Table, state): any[] => {
         streaks.tripleSnapShot = {
           score: 4,
           triple: streaks.triple,
-          highCards,
           cards,
         };
 
@@ -284,13 +283,36 @@ export const determineHandValues = (table: Table, state): any[] => {
             cards,
             firstPair: streaks.firstPair,
             secondPair: streaks.secondPair,
-            highCards: [highCards],
           },
         );
       }
 
+      //Determine flush
+      if (
+        streaks.suits.clubs === 5 || streaks.suits.diamonds === 5 ||
+        streaks.suits.hearts === 5 || streaks.suits.spades === 5
+      ) {
+        let suit = streaks.suits.clubs === 5 ? "Clubs" : "";
+        suit = streaks.suits.diamonds === 5 ? "Diamonds" : suit;
+        suit = streaks.suits.hearts === 5 ? "Hearts" : suit;
+        suit = streaks.suits.spades === 5 ? "Spades" : suit;
+        const cards = hand.filter((card) => {
+          return card[1].suit === suit;
+        });
+
+        setHandType(card, results, "Flush", i, {
+          score: 6,
+          suit,
+          cards,
+        });
+      }
+
+      if (cardNumber !== 6) {
+        return card;
+      }
+
       //Determine pair
-      if (streaks.firstPair.length === 2 && cardNumber === 6) {
+      if (streaks.firstPair.length === 2) {
         const highCards = [...hand].filter((card) => {
           return card[1].rank !== streaks.firstPair[0][1].rank;
         }).splice(0, 3);
@@ -303,7 +325,7 @@ export const determineHandValues = (table: Table, state): any[] => {
           results,
           "Pair",
           i,
-          { score: 2, cards, firstPair: streaks.firstPair, highCards },
+          { score: 2, cards, firstPair: streaks.firstPair },
         );
       }
 
@@ -316,7 +338,6 @@ export const determineHandValues = (table: Table, state): any[] => {
         i,
         { score: 1, cards },
       );
-      return card;
     });
     return hand;
   });
