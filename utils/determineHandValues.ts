@@ -59,19 +59,13 @@ export const determineHandValues = (table: Table, state): any[] => {
 
     let cardNumber = 0;
     hand.reduce((previousCard, card) => {
-      console.log("card", card);
       const previousCardObj = previousCard[1];
       const cardObj = card[1];
       cardNumber += 1;
       //Determine flush for straight flush;
-      console.log(
-        cardNumber,
-        streaks.suits.hearts,
-        "UP HERE",
-      );
 
       // Determine flush streaks
-      switch (cardObj.suit) {
+      switch (previousCardObj.suit) {
         case "Clubs":
           streaks.suits.clubs += 1;
           break;
@@ -197,8 +191,6 @@ export const determineHandValues = (table: Table, state): any[] => {
         });
       }
 
-      console.log(cardNumber, streaks.suits.hearts);
-
       //Determine flush
       if (
         streaks.suits.clubs === 5 || streaks.suits.diamonds === 5 ||
@@ -211,7 +203,7 @@ export const determineHandValues = (table: Table, state): any[] => {
         const cards = hand.filter((card) => {
           return card[1].suit === suit;
         });
-        console.log("SETTING FLUSH", suit, results[i]);
+
         setHandType(card, results, "Flush", i, {
           score: 6,
           suit,
