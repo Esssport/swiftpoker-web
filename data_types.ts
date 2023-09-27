@@ -40,7 +40,7 @@ export type Tournament = {
 };
 
 export type Table = {
-  type?: "cash" | "tournament";
+  type?: string;
   id?: number;
   name?: string;
   startedAt?: string;
@@ -64,10 +64,22 @@ export type Table = {
   buyInRange?: { min: number; max: number };
 };
 
-export type Card = Map<string, {
+export type Result = {
+  username?: string;
+  handName?: string;
+  score?: number;
+  cards?: Card[];
+  triple?: Card[];
+  double?: Card[];
+  firstPair?: Card[];
+  secondPair?: Card[];
+  suit?: string;
+  highCards?: Card[];
+};
+export type Card = [string, {
   suit: string;
   value: number;
   rank?: number;
   name?: string;
   image?: string;
-}>;
+}];
