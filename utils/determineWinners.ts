@@ -13,25 +13,37 @@ export const determineWinners = (results: Result[]): Result[] => {
     return;
   };
 
-  results.reduce((prevPlayer: Result, currentPlayer: Result) => {
-    if (prevPlayer.score > currentPlayer.score) {
-      return prevPlayer;
+  for (let i = 0; i < results.length; i++) {
+    const prevPlayer = results[i];
+    const currentPlayer = results[i + 1];
+    if (!currentPlayer) {
+      continue;
     }
+    if (prevPlayer.score > currentPlayer.score) {
+      updateWinners(winners, prevPlayer);
+      break;
+    }
+
     if (prevPlayer.score === currentPlayer.score) {
-      prevPlayer.cards.forEach((card, i) => {
+      for (let i = 0; i < prevPlayer.cards.length; i++) {
+        const card = prevPlayer.cards[i];
+
         const cardObj = card[1];
-        console.log("currentPlayer.cards", currentPlayer.cards);
+        if (!currentPlayer.cards[i]) {
+          console.log("no current player card");
+          continue;
+        }
         const nextCardObj = currentPlayer.cards[i][1];
 
         if (cardObj.rank > nextCardObj.rank) {
           console.log("prevPlayer won");
           updateWinners(winners, prevPlayer);
-          return;
+          break;
         }
         if (cardObj.rank < nextCardObj.rank) {
           console.log("currentPlayer won");
           updateWinners(winners, currentPlayer);
-          return;
+          break;
         }
         if (cardObj.rank === nextCardObj.rank) {
           if (i === 4) {
@@ -42,10 +54,12 @@ export const determineWinners = (results: Result[]): Result[] => {
             console.log("Both won");
           }
         }
-      });
+      }
     }
-    return currentPlayer;
-  });
+    if (prevPlayer.score < currentPlayer.score) {
+      updateWinners(winners, currentPlayer);
+    }
+  }
 
   console.log("results", results);
   console.log("WINNER IS:", winners);
