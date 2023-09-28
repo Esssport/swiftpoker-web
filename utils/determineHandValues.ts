@@ -37,18 +37,40 @@ export const determineHandValues = (table: Table, state): any[] => {
       return card;
     };
 
-    const streaks = {
-      straight: 1,
+    type Streaks = {
+      straight: number;
+      straightFlush: number;
+      ofAKind: number;
+      hasAce: boolean;
+      tripleSnapShot: Result;
+      firstPair: Card[];
+      secondPair: Card[];
+      aceSuits: string[];
+      triple: Card[];
+      double: Card[];
+      currentPair: Card[];
+      straightHand: Card[];
+      suits: {
+        clubs: number;
+        diamonds: number;
+        hearts: number;
+        spades: number;
+      };
+    };
+
+    const streaks: Streaks = {
+      straight: 0,
       straightFlush: 1,
       ofAKind: 1,
       hasAce: false,
-      tripleSnapShot: <Result> {},
-      firstPair: <Card[]> [],
-      secondPair: <Card[]> [],
+      tripleSnapShot: {},
+      firstPair: [],
+      secondPair: [],
       aceSuits: [],
       triple: [],
       double: [],
       currentPair: [],
+      straightHand: [],
       suits: {
         clubs: 0,
         diamonds: 0,
@@ -101,20 +123,47 @@ export const determineHandValues = (table: Table, state): any[] => {
       } else {
         streaks.straightFlush = 1;
       }
+      const pushStraightCard = (
+        card: Card,
+        streaks: Streaks,
+      ) => {
+        streaks.straightHand.push(card);
+      };
+
       //Determine straight for straight flush;
       if (previousCardObj.rank - cardObj.rank === 1) {
-        streaks.straight += 1;
+        let isDuplicateCard = false;
+        let isDuplicatePrevious = false;
+        streaks.straightHand.forEach((card) => {
+          const rank = card[1].rank;
+          if (rank === cardObj.rank) {
+            isDuplicateCard = true;
+          }
+          if (rank === previousCardObj.rank) {
+            isDuplicatePrevious = true;
+          }
+        });
+
+        if (
+          streaks.straightHand.indexOf(previousCard) === -1 &&
+          !isDuplicatePrevious
+        ) {
+          pushStraightCard(previousCard, streaks);
+        }
+        if (streaks.straightHand.indexOf(card) === -1 && !isDuplicateCard) {
+          pushStraightCard(card, streaks);
+        }
       } else if (previousCardObj.rank - cardObj.rank === 0) {
         //do nothing
       } else {
-        streaks.straight = 1;
+        streaks.straightHand = [];
       }
       if (previousCardObj.rank === 13 || cardObj.rank === 13) {
         streaks.hasAce = true;
         streaks.aceSuits.push(cardObj.suit);
       }
 
-      if (streaks.straight === 5 && streaks.straightFlush === 5) {
+      if (streaks.straightHand.length === 5 && streaks.straightFlush === 5) {
         let handType = "Straight Flush";
         let score = 9;
         if (cardObj.rank === 9) {
@@ -128,7 +177,7 @@ export const determineHandValues = (table: Table, state): any[] => {
         });
       }
       if (
-        streaks.straight === 4 && streaks.hasAce &&
+        streaks.straightHand.length === 4 && streaks.hasAce &&
         previousCardObj.rank === 2 &&
         streaks.straightFlush === 4 &&
         streaks.aceSuits.indexOf(previousCardObj.suit) > -1
@@ -147,17 +196,30 @@ export const determineHandValues = (table: Table, state): any[] => {
         streaks.hasAce = false;
       }
 
-      //Determine four of a kind
       if (previousCardObj.rank === cardObj.rank) {
-        streaks.ofAKind += 1;
         if (streaks.currentPair.length === 0) {
-          streaks.currentPair.push(previousCard);
+          streaks.currentPair.push(previousCard, card);
+          if (streaks.firstPair.length === 0) {
+            streaks.firstPair.push(previousCard, card);
+          } else if (streaks.secondPair.length === 0) {
+            streaks.secondPair.push(previousCard, card);
+          }
+          streaks.ofAKind += 1;
+        } else {
+          streaks.ofAKind += 1;
+          streaks.currentPair.push(card);
+          if (streaks.secondPair.length === 0) {
+            streaks.secondPair.push(previousCard, card);
+          } else if (streaks.secondPair.length < 2) {
+            streaks.secondPair.push(card);
+          }
         }
-        streaks.currentPair.push(card);
       } else {
         streaks.currentPair = [];
         streaks.ofAKind = 1;
       }
+
+      //Determine four of a kind
       if (streaks.ofAKind === 4) {
         const highCards = [...hand].filter((card) => {
           return card[1].rank !== streaks.currentPair[0][1].rank;
@@ -165,7 +227,7 @@ export const determineHandValues = (table: Table, state): any[] => {
         const fourOfAKind = [...hand].filter((card) => {
           return card[1].rank === streaks.currentPair[0][1].rank;
         });
-        const cards = [...fourOfAKind, ...highCards];
+        const cards = [...fourOfAKind, ...highCards].splice(0, 5);
         setHandType(card, results, "Four of a Kind", i, {
           score: 8,
           cards,
@@ -198,7 +260,7 @@ export const determineHandValues = (table: Table, state): any[] => {
 
         if (streaks.firstPair.length === 0) {
           streaks.firstPair = streaks.currentPair;
-        } else {
+        } else if (streaks.secondPair.length < 2) {
           streaks.secondPair = streaks.currentPair;
         }
       }
@@ -212,31 +274,26 @@ export const determineHandValues = (table: Table, state): any[] => {
       }
 
       //Determine straight
-      if (streaks.straight === 5) {
-        const cards = [...hand].filter((card, i) => {
-          return card[1].rank !== cardObj.rank;
-        }).splice(cardNumber - 5, 5);
+      if (streaks.straightHand.length === 5) {
+        const cards = [...streaks.straightHand];
         setHandType(card, results, "Straight", i, {
           score: 5,
-          cards,
+          cards: cards.splice(0, 5),
         });
       }
       if (
-        streaks.straight === 4 && streaks.hasAce && previousCardObj.rank === 2
+        streaks.straightHand.length === 4 && streaks.hasAce &&
+        previousCardObj.rank === 2
       ) {
         const ace = hand.filter((card) => {
           return card[1].rank === 13;
         });
 
-        const cards = [...hand].filter((card, i) => {
-          return card[1].rank !== previousCardObj.rank;
-        })
-          .splice(cardNumber - 4, 4);
-        cards.push(ace[0]);
+        const cards = [...streaks.straightHand];
 
         setHandType(card, results, "Straight", i, {
           score: 5,
-          cards,
+          cards: cards.splice(0, 4).concat(ace[0]),
         });
         streaks.hasAce = false;
       }
@@ -267,7 +324,7 @@ export const determineHandValues = (table: Table, state): any[] => {
       }
 
       //Determine two pair
-      if (streaks.double.length === 2 && streaks.secondPair.length === 2) {
+      if (streaks.secondPair.length === 2) {
         const highCards = [...hand].filter((card) => {
           return card[1].rank !== streaks.firstPair[0][1].rank &&
             card[1].rank !== streaks.secondPair[0][1].rank;

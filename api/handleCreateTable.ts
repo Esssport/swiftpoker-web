@@ -41,11 +41,11 @@ const sampleState = {
   stage: "river",
   hands: {
     communityCards: [
-      ["H7", { rank: 5, name: "Seven", suit: "Hearts" }],
-      ["H2", { rank: 4, name: "Duce", suit: "Clubs" }],
-      ["S7", { rank: 3, name: "Seven", suit: "moos" }],
-      ["C3", { rank: 1, name: "Three", suit: "Clubs" }],
-      ["D5", { rank: 2, name: "Five", suit: "Clubs" }],
+      ["H7", { rank: 1, name: "Seven", suit: "Hearts" }],
+      ["H2", { rank: 2, name: "Duce", suit: "Clubs" }],
+      ["S7", { rank: 5, name: "Seven", suit: "moos" }],
+      ["C3", { rank: 9, name: "Three", suit: "Clubs" }],
+      ["D5", { rank: 10, name: "Five", suit: "Clubs" }],
     ],
   },
   gameStarted: true,
@@ -100,8 +100,8 @@ const sampleTable = {
       username: "c",
       chips: 0,
       buyIn: 100,
-      hand: [["S3", { rank: 6, name: "Three", suit: "Hearts" }], ["D7", {
-        rank: 5,
+      hand: [["S3", { rank: 21, name: "Three", suit: "Hearts" }], ["D7", {
+        rank: 8,
         name: "Seven",
         suit: "Hearts",
       }]],
@@ -121,7 +121,7 @@ const sampleTable = {
       // folded: true,
       buyIn: 100,
       hand: [
-        ["H7", { rank: 6, name: "Seven", suit: "Hearts" }],
+        ["H7", { rank: 21, name: "Seven", suit: "Hearts" }],
         ["H9", { rank: 6, name: "Seven", suit: "Hearts" }],
       ],
       position: 0,
