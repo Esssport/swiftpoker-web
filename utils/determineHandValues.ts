@@ -213,7 +213,9 @@ export const determineHandValues = (table: Table, state): any[] => {
 
       //Determine straight
       if (streaks.straight === 5) {
-        const cards = [...hand].splice(cardNumber - 5, 5);
+        const cards = [...hand].filter((card, i) => {
+          return card[1].rank !== cardObj.rank;
+        }).splice(cardNumber - 5, 5);
         setHandType(card, results, "Straight", i, {
           score: 5,
           cards,
@@ -225,7 +227,11 @@ export const determineHandValues = (table: Table, state): any[] => {
         const ace = hand.filter((card) => {
           return card[1].rank === 13;
         });
-        const cards = [...hand].splice(cardNumber - 4, 4);
+
+        const cards = [...hand].filter((card, i) => {
+          return card[1].rank !== previousCardObj.rank;
+        })
+          .splice(cardNumber - 4, 4);
         cards.push(ace[0]);
 
         setHandType(card, results, "Straight", i, {
