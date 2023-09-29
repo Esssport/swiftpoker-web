@@ -10,6 +10,7 @@ export type Player = {
   disconnected?: boolean;
   totalBet?: number;
   currentBet?: number;
+  bets?: { preFlop?: number; flop?: number; turn?: number; river?: number };
   played?: boolean;
   flop?: Card[];
   turn?: Card;

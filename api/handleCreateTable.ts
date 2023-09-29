@@ -21,7 +21,7 @@ export const handleCreateTable = async (
     id: tableNumber,
     players: [],
     blinds: { small: 10, big: 25 },
-    buyInRange: { min: 100, max: 500 },
+    buyInRange: { min: 500, max: 1000 },
     maxPlayers: limitValue,
     pot: 0,
     type: "cash",
