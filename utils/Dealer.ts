@@ -69,10 +69,11 @@ const next = (table: Table, username?: string) => {
   //next round of cards
   if (gameState.activePosition > players.length - 1) {
     //TODO: reset active position to whoever doesn't have enough chips to match the highest bet
-    // const unmatchedBets = players.filter((p) => {
-    //   p.currentBet < gameState.highestBet;
-    // });
-    // console.log("unmatchedBets", unmatchedBets);
+    console.log("STAGE", gameState.stage);
+    const unmatchedBets = players.filter((p) => {
+      return p.currentBet < gameState.highestBet;
+    });
+    console.log("unmatchedBets", unmatchedBets);
     // if (unmatchedBets.length > 0) {
     //   gameState.activePosition = unmatchedBets[0].position;
     //   next(table, username);
@@ -196,6 +197,9 @@ const placeBet = (
   player.currentBet = bet;
   player.chips = player.chips - bet;
   table.pot = table.pot + bet;
+  gameState.highestBet = bet > gameState.highestBet
+    ? bet
+    : gameState.highestBet;
   console.log(
     `${bet} BET PLACED for ${player.username}, STATE`,
     allGameStates.get(table.id),
