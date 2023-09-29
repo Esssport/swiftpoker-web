@@ -44,6 +44,7 @@ export const handleJoinTable = async (ctx) => {
     const playerObj: Player = {
       username,
       socket,
+      bets: { preflop: 0, flop: 0, turn: 0, river: 0 },
     };
 
     if (!currentPlayers.find((player) => player.username === username)) {
