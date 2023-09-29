@@ -49,6 +49,10 @@ export const startGame = async (
     console.log("onmessage", data);
     switch (data.event) {
       case "bet":
+        if (data.username !== username) {
+          console.log("NOT YOUR TURN", data.username, username);
+          return;
+        }
         placeBet(table, player, data.payload, username);
         break;
     }
@@ -64,6 +68,17 @@ const next = (table: Table, username?: string) => {
   let player = players.find((p) => p.position === gameState.activePosition);
   //next round of cards
   if (gameState.activePosition > players.length - 1) {
+    //TODO: reset active position to whoever doesn't have enough chips to match the highest bet
+    // const unmatchedBets = players.filter((p) => {
+    //   p.currentBet < gameState.highestBet;
+    // });
+    // console.log("unmatchedBets", unmatchedBets);
+    // if (unmatchedBets.length > 0) {
+    //   gameState.activePosition = unmatchedBets[0].position;
+    //   next(table, username);
+    //   return;
+    // }
+
     const stage = gameState.stage;
     gameState.activePosition = 0;
 
@@ -129,6 +144,7 @@ const next = (table: Table, username?: string) => {
       player.position === 1 && gameState.activePosition === 1 &&
       !gameState.bigBlindPlayed
     ) {
+      console.log("BIG BLIND WAS SET");
       placeBet(table, player, table.blinds.big, username);
       gameState.bigBlindPlayed = true;
       return;
@@ -162,6 +178,7 @@ const promptBet = (table: Table, username: string) => {
       waitingFor: gameState.activePosition,
       blinds: table.blinds,
       chips: player.chips,
+      prompt: "Place your bet " + username,
     },
   };
   send(player.socket, betPrompt);
@@ -183,7 +200,7 @@ const placeBet = (
     `${bet} BET PLACED for ${player.username}, STATE`,
     allGameStates.get(table.id),
   );
-  console.log("TABLE:", table);
+  // console.log("TABLE:", table);
 
   gameState.activePosition = gameState.activePosition + 1;
   gameState.promptingFor = null;

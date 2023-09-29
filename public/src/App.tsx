@@ -1,18 +1,21 @@
 import { type Component, createEffect, createSignal, onMount } from "solid-js";
 // TODO: Add the ability to reconnect to a table after getting disconnected store in local storage or a cookie
 function joinTable() {
-  const username = document.getElementById("username") as HTMLInputElement;
+  const usernameElement = document.getElementById(
+    "username",
+  ) as HTMLInputElement;
   const tableID = document.getElementById("tableID") as HTMLInputElement;
 
+  const username = usernameElement.value;
   //TODO: Add Try catch block
   const serverSocket = new WebSocket(
-    `ws://localhost:8080/tables/join/${tableID.value}?username=${username.value}`,
+    `ws://localhost:8080/tables/join/${tableID.value}?username=${username}`,
   );
   serverSocket.onerror = (e) => {
     console.log("ERROR", e);
   };
   serverSocket.onclose = (e) => {
-    console.log(username.value, e.reason);
+    console.log(username, e.reason);
   };
   serverSocket.onopen = (ws) => {
     serverSocket.send(JSON.stringify("Hello from the client!"));
@@ -53,7 +56,7 @@ function joinTable() {
         const finalBetAmount = !!betAmount ? betAmount : payload.blinds.big;
         serverSocket.send(
           //TODO: include userID in payload potentially
-          JSON.stringify({ event: "bet", payload: finalBetAmount }),
+          JSON.stringify({ event: "bet", payload: finalBetAmount, username }),
         );
         setHandData(data.payload.hand);
         setFlop(data.payload.flop);

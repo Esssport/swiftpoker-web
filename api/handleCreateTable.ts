@@ -30,9 +30,9 @@ export const handleCreateTable = async (
   serverTables.set(tableNumber, tableObj);
   console.log("Table created", serverTables);
 
-  const results = determineHandValues(sampleTable, sampleState);
+  // const results = determineHandValues(sampleTable, sampleState);
   // console.log("results", results);
-  const winners = determineWinners(results);
+  // const winners = determineWinners(results);
   ctx.response.body = JSON.stringify(Array.from(serverTables));
 };
 
