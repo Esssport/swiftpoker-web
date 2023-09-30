@@ -12,7 +12,7 @@ const allGameStates = new Map<
     smallBlindPlayed: boolean;
     bigBlindPlayed: boolean;
     promptingFor: string;
-    highestBet: number;
+    highestBets: { preflop: number; flop: number; turn: number; river: number };
   }
 >();
 
@@ -36,13 +36,16 @@ export const startGame = async (
       smallBlindPlayed: false,
       bigBlindPlayed: false,
       promptingFor: null,
-      highestBet: 0,
+      highestBets: { preflop: 0, flop: 0, turn: 0, river: 0 },
     });
   }
   const player = players.find((p) => p.username === username);
 
   next(table, username);
-
+  if (!player) {
+    console.log("NO PLAYER");
+    return;
+  }
   player.socket.onmessage = (m) => {
     const data = JSON.parse(m.data);
     const gameState = allGameStates.get(table.id);
@@ -53,34 +56,56 @@ export const startGame = async (
           console.log("NOT YOUR TURN", data.username, username);
           return;
         }
-        placeBet(table, player, data.payload, username);
+        takeAction({
+          table,
+          player,
+          action: data.event,
+          bet: data.payload,
+          stage: gameState.stage,
+        });
         break;
     }
   };
-
-  // const socket = player.socket;
-  // send(socket, eventObj);
 };
 
 const next = (table: Table, username?: string) => {
   const gameState = allGameStates.get(table.id);
   const players = table.players;
+  const stage = gameState.stage;
   let player = players.find((p) => p.position === gameState.activePosition);
-  //next round of cards
-  if (gameState.activePosition > players.length - 1) {
-    //TODO: reset active position to whoever doesn't have enough chips to match the highest bet
-    console.log("STAGE", gameState.stage);
-    const unmatchedBets = players.filter((p) => {
-      return p.currentBet < gameState.highestBet;
-    });
-    console.log("unmatchedBets", unmatchedBets);
-    // if (unmatchedBets.length > 0) {
-    //   gameState.activePosition = unmatchedBets[0].position;
-    //   next(table, username);
-    //   return;
-    // }
 
-    const stage = gameState.stage;
+  let remainingPlayers = players.filter((p) => !p.folded);
+  if (remainingPlayers.length === 1) {
+    console.log("THE WINNER IS ", remainingPlayers[0].username);
+    gameState.smallBlindPlayed = false;
+    gameState.bigBlindPlayed = false;
+    return;
+  }
+
+  if (
+    player?.bets[stage] !== 0 &&
+    player?.bets[stage] === gameState.highestBets[stage]
+  ) {
+    gameState.activePosition = gameState.activePosition + 1;
+    //maybe remove username here to see what happens. preferably after automating the tests
+    next(table, username);
+    return;
+  }
+
+  //check for bets to be matched
+  if (gameState.activePosition > players.length - 1) {
+    console.log("STAGE", stage);
+    const unmatchedBets = players.filter((p) => {
+      return p.bets[stage] < gameState.highestBets[stage];
+    });
+
+    if (unmatchedBets.length > 0) {
+      gameState.activePosition = unmatchedBets[0].position;
+      next(table, username);
+      return;
+    }
+
+    //next round of cards
     gameState.activePosition = 0;
 
     //update gameStage
@@ -108,7 +133,7 @@ const next = (table: Table, username?: string) => {
       // gameState.newGame = true;
 
       //TODO: determine winner
-      console.log("THE TRUE WINNER IS YOU!");
+      console.log("THE WINNER IS ", player.username);
       gameState.smallBlindPlayed = false;
       gameState.bigBlindPlayed = false;
       return;
@@ -137,7 +162,13 @@ const next = (table: Table, username?: string) => {
       player.position === 0 && gameState.activePosition === 0 &&
       !gameState.smallBlindPlayed
     ) {
-      placeBet(table, player, table.blinds.small, username);
+      takeAction({
+        table,
+        player,
+        action: "blind",
+        bet: table.blinds.small,
+        stage,
+      });
       gameState.smallBlindPlayed = true;
       return;
     }
@@ -146,7 +177,13 @@ const next = (table: Table, username?: string) => {
       !gameState.bigBlindPlayed
     ) {
       console.log("BIG BLIND WAS SET");
-      placeBet(table, player, table.blinds.big, username);
+      takeAction({
+        table,
+        player,
+        action: "blind",
+        bet: table.blinds.big,
+        stage,
+      });
       gameState.bigBlindPlayed = true;
       return;
     }
@@ -161,6 +198,23 @@ const next = (table: Table, username?: string) => {
   return;
 };
 
+const askTOBet = (table: Table, username: string) => {
+  const gameState = allGameStates.get(table.id);
+  const players = table.players;
+  const player = players.find((p) => p.username === username);
+
+  const betPrompt = {
+    event: "bet",
+    payload: {
+      waitingFor: gameState.activePosition,
+      blinds: table.blinds,
+      chips: player.chips,
+      prompt: username + " Place your bet",
+    },
+  };
+  send(player.socket, betPrompt);
+};
+
 const promptBet = (table: Table, username: string) => {
   //TODO: set a timer for folding if no bet is placed
   const gameState = allGameStates.get(table.id);
@@ -173,41 +227,68 @@ const promptBet = (table: Table, username: string) => {
   if (!player || player.username !== username) return;
   gameState.promptingFor = username;
   console.log("prompting", username);
-  const betPrompt = {
-    event: "bet",
-    payload: {
-      waitingFor: gameState.activePosition,
-      blinds: table.blinds,
-      chips: player.chips,
-      prompt: "Place your bet " + username,
-    },
-  };
-  send(player.socket, betPrompt);
+  askTOBet(table, username);
   return;
 };
 
-const placeBet = (
-  table: Table,
-  player: Player,
-  bet: number,
-  username: string,
-) => {
-  const gameState = allGameStates.get(table.id);
-  //TODO: check if the bet is valid
-  player.currentBet = bet;
-  player.chips = player.chips - bet;
-  table.pot = table.pot + bet;
-  gameState.highestBet = bet > gameState.highestBet
-    ? bet
-    : gameState.highestBet;
-  console.log(
-    `${bet} BET PLACED for ${player.username}, STATE`,
-    allGameStates.get(table.id),
-  );
-  // console.log("TABLE:", table);
+interface BetInput {
+  table: Table;
+  player: Player;
+  action: string;
+  bet: number;
+  stage: string;
+}
 
-  gameState.activePosition = gameState.activePosition + 1;
+const takeAction = (input: BetInput) => {
+  const { table, player, action, bet, stage } = input;
+  const gameState = allGameStates.get(table.id);
+  const isBlind = action === "blind";
+  const hasFolded = action === "fold";
+  const isFirstBet = table.firstBets[stage] === 0;
+  const isValidRaise = !isFirstBet && bet >= table.firstBets[stage] * 2;
+  const isValidBet = action === "bet" && bet <= player.chips &&
+    bet >= table.blinds.big;
+  const isValidCheck = action === "check" && table.firstBets[stage] === 0 &&
+    bet === 0;
+
+  if (bet > player.chips) {
+    //handle all in
+  }
+  if (hasFolded) {
+    player.hasChecked = true;
+    player.folded = true;
+    gameState.activePosition += 1;
+    gameState.promptingFor = null;
+    next(table);
+    return;
+  }
+
+  // Check if the bet is valid
+  if (!isBlind && !isValidBet && !isValidRaise && !isValidCheck) {
+    console.log(`Invalid bet of ${bet} chips from ${player.username}`);
+
+    askTOBet(table, player.username);
+    console.log("TRY AGAIN");
+    return;
+  }
+
+  console.log("Stage is", stage);
+  player.currentBet = bet;
+  player.bets[stage] = bet;
+  player.chips -= bet;
+  table.pot += bet;
+
+  if (table.firstBets[stage] === 0 && bet >= table.blinds.big) {
+    table.firstBets[stage] = bet;
+  }
+
+  gameState.highestBets[stage] = Math.max(bet, gameState.highestBets[stage]);
+
+  console.log(`${bet} chips bet by ${player.username}`);
+
+  gameState.activePosition += 1;
   gameState.promptingFor = null;
+
   next(table);
   return;
 };

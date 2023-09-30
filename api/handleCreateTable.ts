@@ -23,6 +23,7 @@ export const handleCreateTable = async (
     blinds: { small: 10, big: 25 },
     buyInRange: { min: 500, max: 1000 },
     maxPlayers: limitValue,
+    firstBets: { preflop: 0, flop: 0, turn: 0, river: 0 },
     pot: 0,
     type: "cash",
   };

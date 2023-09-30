@@ -1,4 +1,5 @@
 export type Player = {
+  hasChecked?: boolean;
   hand?: Card[];
   yourTurn?: boolean;
   id?: number;
@@ -62,6 +63,7 @@ export type Table = {
   running?: false;
   pot?: number;
   blinds?: { small: number; big: number };
+  firstBets?: { preflop: number; flop: number; turn: number; river: number };
   buyInRange?: { min: number; max: number };
 };
 
