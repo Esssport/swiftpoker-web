@@ -41,11 +41,13 @@ function joinTable() {
         const finalAmount = amount <= buyInRange.max && amount >= buyInRange.min
           ? amount
           : buyInRange.min;
+
+        //TODO: pass in action
         serverSocket.send(
           JSON.stringify({ event: "buy-in", payload: finalAmount }),
         );
         break;
-      case "bet":
+      case "action-prompt":
         // if (!data.payload.yourTurn) {
         //   break;
         // }
@@ -131,6 +133,16 @@ const Main: Component = () => {
           value="1"
         />
       </div>
+      <div class="md:w-2/3">
+        <input
+          class="max-w-sm bg-green-900 appearance-none border-2 border-gray-500 rounded w-full py-2 px-4 text-gray-200 leading-tight focus:outline-none focus:bg-black focus:border-purple-500"
+          id="betAmount"
+          type="number"
+          value="0"
+        />
+      </div>
+
+      //TODO: Add buttons for all actions returned
       <button
         class="bg-blue hover:bg-gray-100 text-gray-200 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
         onClick={createTable}
