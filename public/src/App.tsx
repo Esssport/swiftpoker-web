@@ -52,6 +52,11 @@ function joinTable() {
         //   break;
         // }
         const payload = data.payload;
+        //TODO: interact with input field for bet amount, set limitations and default to big blind
+        //TODO: Add a button for each action
+        const actions = payload.actions;
+        console.log("payload", payload);
+        console.log("actions", payload.actions);
         const betAmount = Number(prompt(
           `bet between ${payload.blinds.big} and ${payload.chips}`,
         ));

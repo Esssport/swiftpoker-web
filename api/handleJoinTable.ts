@@ -137,7 +137,7 @@ export const broadcast = (message, tableID = null) => {
 };
 
 export const send = (socket, message) => {
-  // console.log("IN SEND", message);
+  console.log("SENDING", message);
   socket.send(
     JSON.stringify(message),
   );

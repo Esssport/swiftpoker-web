@@ -59,7 +59,8 @@ export const startGame = async (
         takeAction({
           table,
           player,
-          action: data.event,
+          role: data.event,
+          action: data.payload.action,
           betAmount: data.payload,
           stage: gameState.stage,
         });
@@ -165,7 +166,7 @@ const next = (table: Table, username?: string) => {
       takeAction({
         table,
         player,
-        action: "blind",
+        role: "blind",
         betAmount: table.blinds.small,
         stage,
       });
@@ -180,7 +181,8 @@ const next = (table: Table, username?: string) => {
       takeAction({
         table,
         player,
-        action: "blind",
+        role: "blind",
+        action: "bet",
         betAmount: table.blinds.big,
         stage,
       });
@@ -206,19 +208,28 @@ const askTOBet = (
   const players = table.players;
   const player = players.find((p) => p.username === username);
   const gameState = allGameStates.get(table.id);
-  const actions = optionalActions || ["fold"];
+  let actions = [];
   if (table.firstBets[gameState.stage] === 0) {
-    actions.push("check");
-    actions.push("bet");
+    actions = ["check", "bet"];
   } else if (
-    player.chips > gameState.highestBets[gameState.stage] &&
-    table.currentBet > 0
+    player.chips + player.currentBet >= gameState.highestBets[gameState.stage]
   ) {
-    actions.push("call");
-    actions.push("raise");
+    actions = ["fold", "call", "raise"];
   } else {
-    actions.push("allIn");
+    actions = ["fold", "call"];
   }
+  //overriding big blind in preflop since they can only check or raise
+  if (optionalActions) actions = optionalActions;
+
+  // Actions for user that is being prompted
+  //[fold, call, raise] next user to play, if there is a bet [fold, call] when everybody else is all in
+  //
+
+  //in showdown when lost [you lost don't show/muck, show]
+  //in showdown when won [you won don't show, show]
+
+  // TODO: when somebody all ins, anything that surpluses need to be returned to the user
+
   const betPrompt = {
     event: "action-prompt",
     payload: {
@@ -230,6 +241,40 @@ const askTOBet = (
     },
   };
   send(player.socket, betPrompt);
+
+  //set secondaryActions for everyone except the player
+  const otherUsers = players.filter((p) => p.username !== username);
+  otherUsers.forEach((p) => {
+    // Actions for user that is not being prompted, sent as secondaryActions
+    //[check/fold, check] before anybody bets
+    //[fold, call] whens somebody bets (and user's bet is less than highest bet)
+    //[call] current bet is equal to highest bet
+
+    let secondaryActions = [];
+    if (table.firstBets[gameState.stage] === 0) {
+      secondaryActions = ["check/fold", "check"];
+    } else if (
+      gameState.highestBets[gameState.stage] > p.bets[gameState.stage]
+    ) {
+      secondaryActions = ["fold", "call"];
+    } else {
+      secondaryActions = ["call"];
+    }
+
+    const actionsPrompt = {
+      event: "table-updated",
+      payload: {
+        waitingFor: gameState.activePosition,
+        currentBet: p.currentBet > 0 ? p.currentBet : null,
+        blinds: table.blinds,
+        chips: p.chips,
+        secondaryActions,
+        highestBet: gameState.highestBets[gameState.stage],
+        prompt: "Waiting for " + username,
+      },
+    };
+    send(p.socket, actionsPrompt);
+  });
 };
 
 const promptBet = (table: Table, username: string) => {
@@ -244,26 +289,27 @@ const promptBet = (table: Table, username: string) => {
   if (!player || player.username !== username) return;
   gameState.promptingFor = username;
   console.log("prompting", username);
-  askTOBet(table, username, ["call", "check", "fold", "bet", "raise"]);
+  askTOBet(table, username);
   return;
 };
 
 interface BetInput {
   table: Table;
   player: Player;
-  action: string;
+  action?: string;
+  role?: string;
   betAmount: number;
   stage: string;
 }
 
 const takeAction = (input: BetInput) => {
-  const { table, player, action, betAmount, stage } = input;
+  const { table, player, action, betAmount, stage, role } = input;
 
   const isAllIn = betAmount >= player.chips;
   const bet = isAllIn ? player.chips : betAmount;
 
   const gameState = allGameStates.get(table.id);
-  const isBlind = action === "blind";
+  const isBlind = role === "blind";
   const isFirstBet = table.firstBets[stage] === 0;
   const isValidRaise = !isFirstBet && bet >= table.firstBets[stage] * 2;
   const isValidBet = bet >= table.blinds.big;
@@ -279,6 +325,8 @@ const takeAction = (input: BetInput) => {
     console.log("TRY AGAIN");
     return;
   }
+
+  // available actions ["check", "bet", "fold", "call", "raise"];
 
   if (action === "bet") {
     if (!isValidBet && !isFirstBet && !isAllIn) {
@@ -317,8 +365,6 @@ const takeAction = (input: BetInput) => {
       return;
     }
   }
-
-  //TODO: big blind gets an extra check / raise at the end of preflop
 
   console.log("Stage is", stage);
   player.currentBet = bet;
