@@ -1,8 +1,10 @@
 export type Player = {
+  isDealer?: boolean;
   hasChecked?: boolean;
   hand?: Card[];
   yourTurn?: boolean;
   id?: number;
+  role?: string;
   socket?: WebSocket;
   buyIn?: number;
   chips?: number;
@@ -21,11 +23,24 @@ export type Player = {
   position?: number;
   currentHand?: number;
   tablesRegistered?: number[];
-  isDealer?: boolean;
   handHistory?: number[];
   totalWinnings?: number;
   totalHandsWon?: number;
   balance?: number;
+};
+
+export type GameState = {
+  activePosition: number;
+  //TODO: use to replace waitingFor
+  activePlayer?: Player;
+  stage: string;
+  hands: { hands: Card[]; flop: Card[]; turn: Card; river: Card };
+  gameStarted: boolean;
+  newGame: boolean;
+  smallBlindPlayed: boolean;
+  bigBlindPlayed: boolean;
+  promptingFor: string;
+  highestBets: { preflop: number; flop: number; turn: number; river: number };
 };
 
 export type Tournament = {

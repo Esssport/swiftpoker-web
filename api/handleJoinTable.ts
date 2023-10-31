@@ -68,7 +68,7 @@ export const handleJoinTable = async (ctx) => {
     const interval = setInterval(() => {
       // TODO: maybe consider disconnected players.
       const table = serverTables.get(tableID);
-      if (currentPlayers.length >= 4) {
+      if (currentPlayers.length >= 2) {
         clearInterval(interval);
         console.log("cleared interval");
         startGame(username, tableID, currentTable);
@@ -94,8 +94,6 @@ export const handleJoinTable = async (ctx) => {
         }, tableID);
         break;
     }
-
-    // 6475056596 pool cover
 
     //TODO: check the username is not taken and is not empty (only on login, not on join table)
     console.log("client message:", data);
@@ -137,10 +135,8 @@ export const broadcast = (message, tableID = null) => {
 };
 
 export const send = (socket, message) => {
-  console.log("SENDING", message);
+  console.log("SENDING event", message.event);
   socket.send(
     JSON.stringify(message),
   );
 };
-
-//Bell customer service 18006670123

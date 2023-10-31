@@ -1,19 +1,9 @@
 //move send and broadcast to utils
 import { broadcast, send } from "../api/handleJoinTable.ts";
-import { Card, Player, Table } from "../data_types.ts";
+import { Card, GameState, Player, Table } from "../data_types.ts";
 const allGameStates = new Map<
   number,
-  {
-    activePosition: number;
-    stage: string;
-    hands: { hands: Card[]; flop: Card[]; turn: Card; river: Card };
-    gameStarted: boolean;
-    newGame: boolean;
-    smallBlindPlayed: boolean;
-    bigBlindPlayed: boolean;
-    promptingFor: string;
-    highestBets: { preflop: number; flop: number; turn: number; river: number };
-  }
+  GameState
 >();
 
 export const startGame = async (
@@ -52,8 +42,9 @@ export const startGame = async (
     console.log("msg in server: ", data);
     switch (data.event) {
       case "action-taken":
-        if (data.username !== username) {
-          console.log("NOT YOUR TURN", data.username, username);
+        const payload = data.payload;
+        if (payload.userID !== username) {
+          console.log("NOT YOUR TURN", payload.userID, username);
           return;
         }
         takeAction({
@@ -97,11 +88,15 @@ const next = (table: Table, username?: string) => {
   if (gameState.activePosition > players.length - 1) {
     console.log("STAGE", stage);
     const unmatchedBets = players.filter((p) => {
+      console.log("Highest bet", gameState.highestBets[stage]);
+      console.log("player bet", p.bets[stage]);
       return p.bets[stage] < gameState.highestBets[stage];
     });
+    console.log("UNMATCHED BETS", unmatchedBets);
 
     if (unmatchedBets.length > 0) {
       gameState.activePosition = unmatchedBets[0].position;
+      console.log("USERNAME", username);
       next(table, username);
       return;
     }
@@ -223,22 +218,25 @@ const askTOBet = (
 
   // Actions for user that is being prompted
   //[fold, call, raise] next user to play, if there is a bet [fold, call] when everybody else is all in
-  //
 
   //in showdown when lost [you lost don't show/muck, show]
   //in showdown when won [you won don't show, show]
 
   // TODO: when somebody all ins, anything that surpluses need to be returned to the user
 
+  const payload = {
+    waitingFor: username,
+    table,
+    //TODO: make a copy of gameState and remove sensitive info
+    gameState,
+    chips: player.chips,
+    prompt: username + " Place your bet",
+  };
+
   const betPrompt = {
-    event: "action-prompt",
-    payload: {
-      waitingFor: gameState.activePosition,
-      blinds: table.blinds,
-      chips: player.chips,
-      actions,
-      prompt: username + " Place your bet",
-    },
+    event: "table-updated",
+    payload,
+    actions,
   };
   send(player.socket, betPrompt);
 
@@ -263,16 +261,8 @@ const askTOBet = (
 
     const actionsPrompt = {
       event: "table-updated",
-      payload: {
-        waitingFor: gameState.activePosition,
-        currentBet: p.currentBet > 0 ? p.currentBet : null,
-        blinds: table.blinds,
-        chips: p.chips,
-        secondaryActions,
-        table,
-        highestBet: gameState.highestBets[gameState.stage],
-        prompt: "Waiting for " + username,
-      },
+      payload,
+      secondaryActions,
     };
     send(p.socket, actionsPrompt);
   });
@@ -367,7 +357,6 @@ const takeAction = (input: BetInput) => {
     }
   }
 
-  console.log("Stage is", stage);
   player.currentBet = bet;
   player.bets[stage] = bet;
   player.chips -= bet;
@@ -446,6 +435,18 @@ const determinePositions = (players: Player[], nextRound = false) => {
       return player;
     } else {
       player.position = i;
+    }
+    switch (player.position) {
+      case 0:
+        player.role = "smallBlind";
+        break;
+      case 1:
+        player.role = "bigBlind";
+        break;
+      default:
+    }
+    if (player.position === players.length - 1) {
+      player.isDealer = true;
     }
     return player;
   });

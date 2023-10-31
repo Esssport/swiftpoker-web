@@ -9,7 +9,9 @@ import {
 let userSocket: WebSocket;
 let userID: string;
 let currenBet: number;
-import type { Table } from "../../data_types.ts";
+let gameState: GameState;
+const [table, setTable] = createSignal<Table>();
+import type { GameState, Player, Table } from "../../data_types.ts";
 function joinTable() {
   const usernameElement = document.getElementById(
     "username",
@@ -22,6 +24,7 @@ function joinTable() {
   const serverSocket = new WebSocket(
     `ws://localhost:8080/tables/join/${tableID.value}?username=${username}`,
   );
+  userSocket = serverSocket;
   serverSocket.onerror = (e) => {
     console.log("ERROR", e);
   };
@@ -29,21 +32,17 @@ function joinTable() {
     console.log(username, e.reason);
   };
   serverSocket.onopen = (ws) => {
-    serverSocket.send(JSON.stringify("Hello from the client!"));
+    serverSocket.send(JSON.stringify("connected to table " + tableID.value));
   };
-  getTableData();
+  // getTableData();
   serverSocket.onmessage = (m) => {
     const data = JSON.parse(m.data);
-    if (!!data?.prompt) {
-      setPrompts(data.prompt);
+    if (!!data?.payload?.prompt) {
+      setPrompts(data.payload.prompt);
     }
-    if (data.payload?.table) setTableData(data.payload.table);
+    if (data.payload?.table) setPlayers(data.payload.table.players);
     console.log("data", data);
     switch (data.event) {
-      case "table-updated":
-        setTableData(data.payload.table);
-        setPlayers(data.payload.table.players);
-        break;
       case "table-joined":
         const buyInRange = data.buyInRange;
         //Prompt user to buy in within the range of the table
@@ -59,52 +58,56 @@ function joinTable() {
           JSON.stringify({ event: "buy-in", payload: finalAmount }),
         );
         break;
-      case "action-prompt":
-        // if (!data.payload.yourTurn) {
-        //   break;
-        // }
-        const payload = data.payload;
+      case "table-updated":
+        setPlayers(data.payload.table.players);
+        setTable(data.payload.table);
+        gameState = data.payload.gameState;
+        setActiveUser(data.payload.waitingFor);
         //TODO: interact with input field for bet amount, set limitations and default to big blind
-        //TODO: Add a button for each action
-        const actions = payload.actions;
-        console.log("payload", payload);
-        console.log("actions", payload.actions);
-        setActions(actions);
-        const betAmount = Number(prompt(
-          `bet between ${payload.blinds.big} and ${payload.chips}`,
-        ));
-        const finalBetAmount = !!betAmount ? betAmount : payload.blinds.big;
-        currenBet = finalBetAmount;
-        serverSocket.send(
-          //TODO: include userID in payload potentially
-          //console.log
-          JSON.stringify({ event: "call", payload: finalBetAmount, username }),
-        );
-        setHandData(data.payload.hand);
-        setFlop(data.payload.flop);
+        if (activeUser() !== userID) setActions([]);
+        //setSecondaryActions([]);
+        if (data.actions) {
+          setActions(data.actions);
+          // const betAmount = Number(prompt(
+          //   `bet between ${table.blinds.big} and ${data.payload.chips}`,
+          // ));
+        }
+
+        if (data.secondaryAction) {
+          //TODO
+        }
         break;
     }
   };
 }
 
 const takeAction = (action: string) => () => {
+  const betAmount = document.getElementById(
+    "betAmount",
+  ) as HTMLInputElement;
+  const finalBetAmount = !!betAmount.value
+    ? +betAmount.value
+    : table().blinds.big;
+  currenBet = finalBetAmount;
   userSocket.send(
+    //TODO: include userID in payload potentially
     JSON.stringify({
       event: "action-taken",
       payload: { betAmount: currenBet, userID, action },
     }),
   );
+  console.log("action taken", action);
 };
 
-function getTableData(tableID = 1) {
-  fetch(`http://localhost:8080/tables/${tableID}`)
-    .then((response) => {
-      response.json().then((data) => {
-        setTableData(data);
-      });
-    })
-    .catch((err) => console.log(err));
-}
+// function getTableData(tableID = 1) {
+//   fetch(`http://localhost:8080/tables/${tableID}`)
+//     .then((response) => {
+//       response.json().then((data) => {
+//         // setTableData(data);
+//       });
+//     })
+//     .catch((err) => console.log(err));
+// }
 
 function createTable() {
   const tableLimit = prompt("How many people can join this table?") || 10;
@@ -117,22 +120,20 @@ function createTable() {
   fetch(request).then((response) => {
     console.log("message", response);
     response.json().then((data) => {
-      setTableData(data);
+      // setTableData(data);
     });
   })
     .catch((err) => console.log(err));
 }
 
-const [tableData, setTableData] = createSignal({});
-const [players, setPlayers] = createSignal([]);
+const [players, setPlayers] = createSignal<Player[]>([]);
 const [prompts, setPrompts] = createSignal([]);
-const [handData, setHandData] = createSignal([]);
-const [flop, setFlop] = createSignal([]);
 const [actions, setActions] = createSignal([]);
+const [activeUser, setActiveUser] = createSignal("");
 
-createEffect(() => {
-  getTableData();
-});
+// createEffect(() => {
+//   getTableData();
+// });
 
 const Main: Component = () => {
   return (
@@ -142,7 +143,7 @@ const Main: Component = () => {
           class="max-w-sm bg-gray-900 appearance-none border-2 border-gray-500 rounded w-full py-2 px-4 text-gray-200 leading-tight focus:outline-none focus:bg-black focus:border-purple-500"
           id="username"
           type="text"
-          value="anonymous"
+          value="a"
         />
       </div>
       <div class="md:w-2/3">
@@ -158,7 +159,7 @@ const Main: Component = () => {
           class="max-w-sm bg-green-900 appearance-none border-2 border-gray-500 rounded w-full py-2 px-4 text-gray-200 leading-tight focus:outline-none focus:bg-black focus:border-purple-500"
           id="betAmount"
           type="number"
-          value="0"
+          value="25"
         />
       </div>
       <div class="md:w-2/3">
@@ -191,26 +192,35 @@ const Main: Component = () => {
         <h1 class="font-bold text-blue-300">
           Community cards
         </h1>
-        <p>{JSON.stringify(flop())}</p>
+        <p>TODO</p>
       </section>
       <section class="md:container md:mx-auto" style="padding-bottom: 25px;">
         <h1 class="font-bold text-blue-300">
           Players
         </h1>
-        <For each={players()} fallback={<p>Loading players...</p>}>
-          {(player) => (
-            <div>
-              <p>
-                {JSON.stringify(player.username)}
-                <br /> {JSON.stringify(player.chips)}
-              </p>
-            </div>
-          )}
-        </For>
-        <h1 class="font-bold text-blue-300">
-          Table Data
-        </h1>
-        <p>{JSON.stringify(tableData())}</p>
+        <ul class="player-list">
+          <For each={players()} fallback={<p>Loading players...</p>}>
+            {(player) => (
+              <li
+                classList={{
+                  player: true,
+                  active: activeUser() === player.username,
+                }}
+              >
+                Username: {player.username}
+                <br /> Chips: {player.chips}
+                <br /> Bet: {player.bets[gameState?.stage]}
+                <br /> role: {player.role}
+                {player.isDealer && (
+                  <>
+                    <br />dealer
+                  </>
+                )}
+                <br /> cards: {JSON.stringify(player.hand)}
+              </li>
+            )}
+          </For>
+        </ul>
       </section>
       <section class="md:container md:mx-auto" style="padding-bottom: 25px;">
       </section>
