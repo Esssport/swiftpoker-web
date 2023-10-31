@@ -1,5 +1,15 @@
-import { type Component, createEffect, createSignal, onMount } from "solid-js";
+import {
+  type Component,
+  createEffect,
+  createSignal,
+  For,
+  onMount,
+} from "solid-js";
 // TODO: Add the ability to reconnect to a table after getting disconnected store in local storage or a cookie
+let userSocket: WebSocket;
+let userID: string;
+let currenBet: number;
+import type { Table } from "../../data_types.ts";
 function joinTable() {
   const usernameElement = document.getElementById(
     "username",
@@ -7,6 +17,7 @@ function joinTable() {
   const tableID = document.getElementById("tableID") as HTMLInputElement;
 
   const username = usernameElement.value;
+  userID = username;
   //TODO: Add Try catch block
   const serverSocket = new WebSocket(
     `ws://localhost:8080/tables/join/${tableID.value}?username=${username}`,
@@ -26,11 +37,12 @@ function joinTable() {
     if (!!data?.prompt) {
       setPrompts(data.prompt);
     }
+    if (data.payload?.table) setTableData(data.payload.table);
     console.log("data", data);
     switch (data.event) {
       case "table-updated":
         setTableData(data.payload.table);
-        setTablesData(data.payload.tables);
+        setPlayers(data.payload.table.players);
         break;
       case "table-joined":
         const buyInRange = data.buyInRange;
@@ -57,13 +69,16 @@ function joinTable() {
         const actions = payload.actions;
         console.log("payload", payload);
         console.log("actions", payload.actions);
+        setActions(actions);
         const betAmount = Number(prompt(
           `bet between ${payload.blinds.big} and ${payload.chips}`,
         ));
         const finalBetAmount = !!betAmount ? betAmount : payload.blinds.big;
+        currenBet = finalBetAmount;
         serverSocket.send(
           //TODO: include userID in payload potentially
-          JSON.stringify({ event: "bet", payload: finalBetAmount, username }),
+          //console.log
+          JSON.stringify({ event: "call", payload: finalBetAmount, username }),
         );
         setHandData(data.payload.hand);
         setFlop(data.payload.flop);
@@ -72,14 +87,14 @@ function joinTable() {
   };
 }
 
-function getTablesData() {
-  fetch("http://localhost:8080/tables").then((response) => {
-    console.log("response", response);
-    response.json().then((data) => {
-      setTablesData(data);
-    });
-  });
-}
+const takeAction = (action: string) => () => {
+  userSocket.send(
+    JSON.stringify({
+      event: "action-taken",
+      payload: { betAmount: currenBet, userID, action },
+    }),
+  );
+};
 
 function getTableData(tableID = 1) {
   fetch(`http://localhost:8080/tables/${tableID}`)
@@ -102,21 +117,21 @@ function createTable() {
   fetch(request).then((response) => {
     console.log("message", response);
     response.json().then((data) => {
-      setTablesData(data);
+      setTableData(data);
     });
   })
     .catch((err) => console.log(err));
 }
 
 const [tableData, setTableData] = createSignal({});
-const [tablesData, setTablesData] = createSignal([]);
+const [players, setPlayers] = createSignal([]);
 const [prompts, setPrompts] = createSignal([]);
 const [handData, setHandData] = createSignal([]);
 const [flop, setFlop] = createSignal([]);
+const [actions, setActions] = createSignal([]);
 
 createEffect(() => {
   getTableData();
-  getTablesData();
 });
 
 const Main: Component = () => {
@@ -146,8 +161,20 @@ const Main: Component = () => {
           value="0"
         />
       </div>
-
-      //TODO: Add buttons for all actions returned
+      <div class="md:w-2/3">
+        <h1></h1>
+        <For each={actions()} fallback={<div>Loading actions...</div>}>
+          {/* TODO: Add attributes for bet amount */}
+          {(action) => (
+            <button
+              class="bg-blue hover:bg-gray-100 text-gray-200 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+              onClick={takeAction(action)}
+            >
+              {action}
+            </button>
+          )}
+        </For>
+      </div>
       <button
         class="bg-blue hover:bg-gray-100 text-gray-200 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
         onClick={createTable}
@@ -162,25 +189,30 @@ const Main: Component = () => {
       </button>
       <section class="md:container md:mx-auto" style="padding-bottom: 25px;">
         <h1 class="font-bold text-blue-300">
-          Current Hand
-        </h1>
-        <p>{JSON.stringify(handData())}</p>
-      </section>
-      <section class="md:container md:mx-auto" style="padding-bottom: 25px;">
-        <h1 class="font-bold text-blue-300">
           Community cards
         </h1>
         <p>{JSON.stringify(flop())}</p>
       </section>
       <section class="md:container md:mx-auto" style="padding-bottom: 25px;">
         <h1 class="font-bold text-blue-300">
-          Current Table
+          Players
+        </h1>
+        <For each={players()} fallback={<p>Loading players...</p>}>
+          {(player) => (
+            <div>
+              <p>
+                {JSON.stringify(player.username)}
+                <br /> {JSON.stringify(player.chips)}
+              </p>
+            </div>
+          )}
+        </For>
+        <h1 class="font-bold text-blue-300">
+          Table Data
         </h1>
         <p>{JSON.stringify(tableData())}</p>
       </section>
       <section class="md:container md:mx-auto" style="padding-bottom: 25px;">
-        <h1 class="font-bold text-blue-300">Tables</h1>
-        {JSON.stringify(tablesData())}
       </section>
       <section class="md:container md:mx-auto">
         <h1 class="font-bold text-blue-300">Prompts</h1>

@@ -49,9 +49,9 @@ export const startGame = async (
   player.socket.onmessage = (m) => {
     const data = JSON.parse(m.data);
     const gameState = allGameStates.get(table.id);
-    console.log("onmessage", data);
+    console.log("msg in server: ", data);
     switch (data.event) {
-      case "bet":
+      case "action-taken":
         if (data.username !== username) {
           console.log("NOT YOUR TURN", data.username, username);
           return;
@@ -59,9 +59,9 @@ export const startGame = async (
         takeAction({
           table,
           player,
-          role: data.event,
+          role: data.role,
           action: data.payload.action,
-          betAmount: data.payload,
+          betAmount: data.payload.betAmount,
           stage: gameState.stage,
         });
         break;
@@ -269,6 +269,7 @@ const askTOBet = (
         blinds: table.blinds,
         chips: p.chips,
         secondaryActions,
+        table,
         highestBet: gameState.highestBets[gameState.stage],
         prompt: "Waiting for " + username,
       },
