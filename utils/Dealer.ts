@@ -15,6 +15,9 @@ export const startGame = async (
   if (!tableID || !players || players.length < 2) {
     return;
   }
+  if (username !== players[0].username) {
+    return;
+  }
 
   if (!allGameStates.has(tableID)) {
     allGameStates.set(tableID, {
@@ -50,7 +53,6 @@ export const startGame = async (
         takeAction({
           table,
           player,
-          role: data.role,
           action: data.payload.action,
           betAmount: data.payload.betAmount,
           stage: gameState.stage,
@@ -59,8 +61,10 @@ export const startGame = async (
     }
   };
 };
-
+let nextCounter = 0;
 const next = (table: Table, username?: string) => {
+  nextCounter += 1;
+  console.log("NEXT", nextCounter, username);
   const gameState = allGameStates.get(table.id);
   const players = table.players;
   const stage = gameState.stage;
@@ -88,16 +92,14 @@ const next = (table: Table, username?: string) => {
   if (gameState.activePosition > players.length - 1) {
     console.log("STAGE", stage);
     const unmatchedBets = players.filter((p) => {
-      console.log("Highest bet", gameState.highestBets[stage]);
-      console.log("player bet", p.bets[stage]);
       return p.bets[stage] < gameState.highestBets[stage];
     });
-    console.log("UNMATCHED BETS", unmatchedBets);
+    console.log("UNMATCHED BETS", unmatchedBets[0].username);
 
     if (unmatchedBets.length > 0) {
       gameState.activePosition = unmatchedBets[0].position;
       console.log("USERNAME", username);
-      next(table, username);
+      next(table);
       return;
     }
 
@@ -155,28 +157,26 @@ const next = (table: Table, username?: string) => {
       player = players.find((p) => p.position === gameState.activePosition);
     }
     if (
-      player.position === 0 && gameState.activePosition === 0 &&
+      player.role === "smallBlind" && gameState.activePosition === 0 &&
       !gameState.smallBlindPlayed
     ) {
       takeAction({
         table,
         player,
-        role: "blind",
         betAmount: table.blinds.small,
         stage,
+        action: "bet",
       });
       gameState.smallBlindPlayed = true;
       return;
     }
     if (
-      player.position === 1 && gameState.activePosition === 1 &&
+      player.role === "bigBlind" && gameState.activePosition === 1 &&
       !gameState.bigBlindPlayed
     ) {
-      console.log("BIG BLIND WAS SET");
       takeAction({
         table,
         player,
-        role: "blind",
         action: "bet",
         betAmount: table.blinds.big,
         stage,
@@ -288,19 +288,18 @@ interface BetInput {
   table: Table;
   player: Player;
   action?: string;
-  role?: string;
   betAmount: number;
   stage: string;
 }
 
 const takeAction = (input: BetInput) => {
-  const { table, player, action, betAmount, stage, role } = input;
+  const { table, player, action, betAmount, stage } = input;
 
   const isAllIn = betAmount >= player.chips;
   const bet = isAllIn ? player.chips : betAmount;
 
   const gameState = allGameStates.get(table.id);
-  const isBlind = role === "blind";
+  const isBlind = player.role === "smallBlind" || player.role === "bigBlind";
   const isFirstBet = table.firstBets[stage] === 0;
   const isValidRaise = !isFirstBet && bet >= table.firstBets[stage] * 2;
   const isValidBet = bet >= table.blinds.big;

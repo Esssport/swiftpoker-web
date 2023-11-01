@@ -9,7 +9,7 @@ import {
 let userSocket: WebSocket;
 let userID: string;
 let currenBet: number;
-let gameState: GameState;
+
 const [table, setTable] = createSignal<Table>();
 import type { GameState, Player, Table } from "../../data_types.ts";
 function joinTable() {
@@ -61,7 +61,7 @@ function joinTable() {
       case "table-updated":
         setPlayers(data.payload.table.players);
         setTable(data.payload.table);
-        gameState = data.payload.gameState;
+        setGameState(data.payload.gameState);
         setActiveUser(data.payload.waitingFor);
         //TODO: interact with input field for bet amount, set limitations and default to big blind
         if (activeUser() !== userID) setActions([]);
@@ -127,6 +127,7 @@ function createTable() {
 }
 
 const [players, setPlayers] = createSignal<Player[]>([]);
+const [gameState, setGameState] = createSignal<GameState>();
 const [prompts, setPrompts] = createSignal([]);
 const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
@@ -209,7 +210,7 @@ const Main: Component = () => {
               >
                 Username: {player.username}
                 <br /> Chips: {player.chips}
-                <br /> Bet: {player.bets[gameState?.stage]}
+                <br /> Bet: {player.bets[gameState()?.stage]}
                 <br /> role: {player.role}
                 {player.isDealer && (
                   <>
