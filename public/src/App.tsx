@@ -10,7 +10,6 @@ let userSocket: WebSocket;
 let userID: string;
 let currenBet: number;
 
-const [table, setTable] = createSignal<Table>();
 import type { GameState, Player, Table } from "../../data_types.ts";
 function joinTable() {
   const usernameElement = document.getElementById(
@@ -129,6 +128,7 @@ function createTable() {
 const [players, setPlayers] = createSignal<Player[]>([]);
 const [gameState, setGameState] = createSignal<GameState>();
 const [prompts, setPrompts] = createSignal([]);
+const [table, setTable] = createSignal<Table>();
 const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
 
@@ -224,6 +224,10 @@ const Main: Component = () => {
         </ul>
       </section>
       <section class="md:container md:mx-auto" style="padding-bottom: 25px;">
+        <h1 class="font-bold text-blue-300">
+          Pot
+        </h1>
+        <p>{table()?.pot}</p>
       </section>
       <section class="md:container md:mx-auto">
         <h1 class="font-bold text-blue-300">Prompts</h1>

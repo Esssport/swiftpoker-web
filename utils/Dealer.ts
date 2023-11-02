@@ -34,41 +34,42 @@ export const startGame = async (
   }
   const player = players.find((p) => p.username === username);
 
-  next(table, username);
+  next(table);
   if (!player) {
     console.log("NO PLAYER");
     return;
   }
-  player.socket.onmessage = (m) => {
-    const data = JSON.parse(m.data);
-    const gameState = allGameStates.get(table.id);
-    console.log("msg in server: ", data);
-    switch (data.event) {
-      case "action-taken":
-        const payload = data.payload;
-        if (payload.userID !== username) {
-          console.log("NOT YOUR TURN", payload.userID, username);
-          return;
-        }
-        takeAction({
-          table,
-          player,
-          action: data.payload.action,
-          betAmount: data.payload.betAmount,
-          stage: gameState.stage,
-        });
-        break;
-    }
-  };
+  players.forEach((player) => {
+    player.socket.onmessage = (m) => {
+      const data = JSON.parse(m.data);
+      const gameState = allGameStates.get(table.id);
+      console.log("msg in server: ", data);
+      switch (data.event) {
+        case "action-taken":
+          const payload = data.payload;
+          takeAction({
+            table,
+            player,
+            action: payload.action,
+            betAmount: payload.betAmount,
+            stage: gameState.stage,
+          });
+          break;
+      }
+    };
+  });
 };
+
+//TODO: deal hands after the blinds have been placed.
 let nextCounter = 0;
-const next = (table: Table, username?: string) => {
+const next = (table: Table) => {
   nextCounter += 1;
-  console.log("NEXT", nextCounter, username);
   const gameState = allGameStates.get(table.id);
+  console.log("NEXT", nextCounter, "position", gameState.activePosition);
   const players = table.players;
   const stage = gameState.stage;
-  let player = players.find((p) => p.position === gameState.activePosition);
+  let player = players.find((p) => p.position === gameState.activePosition) ||
+    players[0];
 
   let remainingPlayers = players.filter((p) => !p.folded);
   if (remainingPlayers.length === 1) {
@@ -78,27 +79,16 @@ const next = (table: Table, username?: string) => {
     return;
   }
 
-  if (
-    player?.bets[stage] !== 0 &&
-    player?.bets[stage] === gameState.highestBets[stage]
-  ) {
-    gameState.activePosition = gameState.activePosition + 1;
-    //maybe remove username here to see what happens. preferably after automating the tests
-    next(table, username);
-    return;
-  }
-
   //check for bets to be matched
   if (gameState.activePosition > players.length - 1) {
     console.log("STAGE", stage);
     const unmatchedBets = players.filter((p) => {
       return p.bets[stage] < gameState.highestBets[stage];
     });
-    console.log("UNMATCHED BETS", unmatchedBets[0].username);
 
     if (unmatchedBets.length > 0) {
+      console.log("UNMATCHED BETS", unmatchedBets[0].username);
       gameState.activePosition = unmatchedBets[0].position;
-      console.log("USERNAME", username);
       next(table);
       return;
     }
@@ -138,7 +128,17 @@ const next = (table: Table, username?: string) => {
     }
 
     populateHands(table.id, players, gameState.stage);
-    next(table, username);
+    next(table);
+    return;
+  }
+
+  if (
+    player?.bets[stage] !== 0 &&
+    player?.bets[stage] === gameState.highestBets[stage]
+  ) {
+    gameState.activePosition += 1;
+    //maybe remove username here to see what happens. preferably after automating the tests
+    next(table);
     return;
   }
 
@@ -146,48 +146,48 @@ const next = (table: Table, username?: string) => {
     gameState.activePosition = 0;
     player = players.find((p) => p.position === gameState.activePosition);
   }
-  if (!username) username = player.username;
 
-  if (gameState.newGame = true) {
+  if (gameState.newGame === true) {
     gameState.newGame = false;
     populateHands(table.id, players);
     determinePositions(players);
-    if (!player) {
-      console.log("NEWGAME activePosition", gameState.activePosition);
-      player = players.find((p) => p.position === gameState.activePosition);
-    }
-    if (
-      player.role === "smallBlind" && gameState.activePosition === 0 &&
-      !gameState.smallBlindPlayed
-    ) {
-      takeAction({
-        table,
-        player,
-        betAmount: table.blinds.small,
-        stage,
-        action: "bet",
-      });
-      gameState.smallBlindPlayed = true;
-      return;
-    }
-    if (
-      player.role === "bigBlind" && gameState.activePosition === 1 &&
-      !gameState.bigBlindPlayed
-    ) {
-      takeAction({
-        table,
-        player,
-        action: "bet",
-        betAmount: table.blinds.big,
-        stage,
-      });
-      gameState.bigBlindPlayed = true;
-      return;
-    }
+  }
+  if (!player) {
+    console.log("NEWGAME activePosition", gameState.activePosition);
+    player = players.find((p) => p.position === gameState.activePosition);
+  }
+  if (
+    player.role === "smallBlind" && gameState.activePosition === 0 &&
+    !gameState.smallBlindPlayed
+  ) {
+    gameState.smallBlindPlayed = true;
+    takeAction({
+      table,
+      player,
+      betAmount: table.blinds.small,
+      stage,
+      action: "bet",
+    });
+    return;
+  }
+  if (
+    player.role === "bigBlind" && gameState.activePosition === 1 &&
+    !gameState.bigBlindPlayed
+  ) {
+    gameState.bigBlindPlayed = true;
+    takeAction({
+      table,
+      player,
+      action: "bet",
+      betAmount: table.blinds.big,
+      stage,
+    });
+    return;
   }
 
   if (
-    gameState.activePosition <= players.length && player.username === username
+    //probably needs to be players.length - 1
+    gameState.activePosition <= players.length
   ) {
     promptBet(table, player.username);
     return;
@@ -316,6 +316,12 @@ const takeAction = (input: BetInput) => {
     return;
   }
 
+  if (action === "call") {
+    const deficitAmount = gameState.highestBets[stage] - player.bets[stage];
+    placeBet(table, player, deficitAmount, gameState);
+    return;
+  }
+
   // available actions ["check", "bet", "fold", "call", "raise"];
 
   if (action === "bet") {
@@ -332,6 +338,8 @@ const takeAction = (input: BetInput) => {
     //   next(table);
     //   return;
     // }
+    placeBet(table, player, bet, gameState);
+    return;
   }
 
   if (action === "fold") {
@@ -341,9 +349,12 @@ const takeAction = (input: BetInput) => {
     next(table);
     return;
   }
-
+  console.log("action", action);
   if (action === "check") {
-    if (table.firstBets[stage] === 0) {
+    if (
+      table.firstBets[stage] === 0 ||
+      (gameState.stage === "preflop" && player.role === "bigBlind")
+    ) {
       player.hasChecked = true;
       gameState.activePosition += 1;
       gameState.promptingFor = null;
@@ -356,11 +367,20 @@ const takeAction = (input: BetInput) => {
     }
   }
 
-  player.currentBet = bet;
-  player.bets[stage] = bet;
+  // placeBet(table, player, bet, gameState);
+};
+
+const placeBet = (
+  table: Table,
+  player: Player,
+  bet: number,
+  gameState: GameState,
+) => {
+  const stage = gameState.stage;
+  player.currentBet = bet + player.bets[stage];
+  player.bets[stage] = player.currentBet;
   player.chips -= bet;
   table.pot += bet;
-  player.currentBet = player.currentBet + bet;
 
   if (table.firstBets[stage] === 0 && bet >= table.blinds.big) {
     table.firstBets[stage] = bet;

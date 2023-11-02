@@ -27,6 +27,17 @@ li {
     border-radius: 6px;
 }
 
+
+@keyframes blinker {  
+  0% { border-color: white; }
+  50% { border-color: white; }
+  51% { border-color: greenyellow; }
+  100% { border-color: greenyellow; }
+}
+
 .active {
     border-color: greenyellow;
+    animation-name: blinker;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
 }
