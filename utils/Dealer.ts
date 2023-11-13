@@ -70,9 +70,10 @@ const handleWinnings = (table: Table, state: GameState) => {
   //handle cases where everybody folds
   let remainingPlayers = players.filter((p) => !p.folded);
   if (remainingPlayers.length === 1) {
-    winners = [winners.find((result) => {
-      return result.username === remainingPlayers[0].username;
-    })];
+    //TODO: keep handValue in context as the game goes on
+    winners = remainingPlayers;
+    const player = players.find((p) => p.username === winners[0].username);
+    player.chips += table.pot;
   } else {
     if (winners.length === 1) {
       players.find((p) => p.username === winners[0].username).chips +=
@@ -85,6 +86,7 @@ const handleWinnings = (table: Table, state: GameState) => {
       });
     }
   }
+  table.winners = winners;
 
   console.log(
     "WINNER",
@@ -96,7 +98,6 @@ const handleWinnings = (table: Table, state: GameState) => {
     winners[0].handName,
   );
 
-  table.winners = winners;
   console.log("WINNERS", table.winners);
   table.pot = 0;
   state.smallBlindPlayed = false;

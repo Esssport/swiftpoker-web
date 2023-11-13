@@ -1,6 +1,4 @@
 import { Table } from "../data_types.ts";
-import { determineHandValues } from "../utils/determineHandValues.ts";
-import { determineWinners } from "../utils/determineWinners.ts";
 let tableNumber = 0;
 export const handleCreateTable = async (
   ctx,
