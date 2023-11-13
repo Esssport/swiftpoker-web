@@ -10,7 +10,6 @@ export const determineWinners = (results: Result[]): Result[] => {
     if (winners.indexOf(currentPlayer) === -1) {
       winners.push(currentPlayer);
     }
-    console.log("current winners", winners);
     return;
   };
 

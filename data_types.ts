@@ -23,6 +23,7 @@ export type Player = {
 };
 
 export type GameState = {
+  nextRound?: boolean;
   activePosition: number;
   //TODO: use to replace waitingFor
   activePlayer?: Player;

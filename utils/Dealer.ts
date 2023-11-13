@@ -107,6 +107,7 @@ const handleWinnings = (table: Table, state: GameState) => {
   state.highestBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
   state.hands = null;
   state.stage = "preflop";
+  state.nextRound = true;
 
   table.communityCards = [];
   table.firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
@@ -198,13 +199,15 @@ const next = (table: Table) => {
     gameState.activePosition = 0;
     player = players.find((p) => p.position === gameState.activePosition);
   }
-
-  if (gameState.newGame === true) {
-    populateHands(table.id, players);
+  if (gameState.newGame) {
     determinePositions(players, gameState);
+    populateHands(table.id, players);
+
+    // players.forEach((p) => {
+    //   console.log("PLAYER", p.username, "position", p.position);
+    // });
   }
   if (!player) {
-    console.log("NEWGAME activePosition", gameState.activePosition);
     player = players.find((p) => p.position === gameState.activePosition);
   }
   if (
@@ -466,7 +469,7 @@ const populateHands = (
   let gameState = allGameStates.get(tableID);
   let tableHands = gameState.hands;
   // also run if the game has ended, for next round
-  if (!tableHands) {
+  if (!tableHands || gameState.newGame) {
     const results = dealCards(tableID, players.length);
     gameState.hands = results;
   }
@@ -491,17 +494,26 @@ const populateHands = (
 
 const determinePositions = (players: Player[], state: GameState) => {
   players.forEach((player, i) => {
-    if (state.newGame === true) {
-      player.position = player.position + 1;
-      if (player.position >= players.length - 1) {
-        //TODO : check if this is correct
-        player.position = 0;
-      }
-    }
+    //maybe add seat attribute to player
     if (player.position !== undefined) {
-      return player;
+      // return player;
     } else {
       player.position = i;
+    }
+    if (state.nextRound === true) {
+      console.log("NEXT ROUND");
+      // player.position += 1;
+      //TODO:
+      player.position = i;
+      // if (player.position >= players.length) {
+      //   player.position = 0;
+      // }
+    }
+
+    if (player.position === players.length - 1) {
+      player.isDealer = true;
+    } else {
+      player.isDealer = undefined;
     }
     switch (player.position) {
       case 0:
@@ -511,13 +523,23 @@ const determinePositions = (players: Player[], state: GameState) => {
         player.role = "bigBlind";
         break;
       default:
+        player.role = undefined;
+        break;
     }
-    if (player.position === players.length - 1) {
-      player.isDealer = true;
-    }
+    console.log(
+      "player",
+      player.username,
+      "position",
+      player.position,
+      "role",
+      player.role,
+      "isDealer",
+      player.isDealer,
+    );
     return player;
   });
   state.newGame = false;
+  state.nextRound = false;
   return players;
 };
 
