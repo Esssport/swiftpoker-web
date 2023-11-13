@@ -389,6 +389,7 @@ const takeAction = (input: BetInput) => {
   // available actions ["check", "bet", "fold", "call", "raise"];
 
   //TODO: possibly pass raise amount and raise range with actions, like raiseRange: [minimumRaise, player.chips]
+  //FIXME: fix cases where player raises and raises again
   if (action === "raise") {
     const minimumRaise = table.firstBets[stage] * 2;
     const isValidRaise = bet >= minimumRaise;
