@@ -25,11 +25,11 @@ export const startGame = async (
     allGameStates.set(tableID, {
       activePosition: 0,
       stage: "preflop",
-      hands: null,
+      hands: undefined,
       newGame: true,
-      smallBlindPlayed: false,
-      bigBlindPlayed: false,
-      promptingFor: null,
+      smallBlindPlayed: undefined,
+      bigBlindPlayed: undefined,
+      promptingFor: undefined,
       highestBets: { preflop: 0, flop: 0, turn: 0, river: 0 },
     });
   }
@@ -200,16 +200,10 @@ const next = (table: Table) => {
     player?.bets[stage] === gameState.highestBets[stage]
   ) {
     gameState.activePosition += 1;
-    //maybe remove username here to see what happens. preferably after automating the tests
     next(table);
     return;
   }
 
-  //probably remove it since there's a semi duplicate below
-  if (!player) {
-    gameState.activePosition = 0;
-    player = players.find((p) => p.position === gameState.activePosition);
-  }
   if (gameState.newGame) {
     determinePositions(players, gameState);
     populateHands(table.id, players);
@@ -218,11 +212,11 @@ const next = (table: Table) => {
     //   console.log("PLAYER", p.username, "position", p.position);
     // });
   }
-  if (!player) {
-    player = players.find((p) => p.position === gameState.activePosition);
-  }
+
+  player = players.find((p) => p.position === gameState.activePosition);
+
   if (
-    player.role === "smallBlind" && gameState.activePosition === 0 &&
+    player.role === "smallBlind" &&
     !gameState.smallBlindPlayed
   ) {
     gameState.smallBlindPlayed = true;
@@ -236,7 +230,7 @@ const next = (table: Table) => {
     return;
   }
   if (
-    player.role === "bigBlind" && gameState.activePosition === 1 &&
+    player.role === "bigBlind" &&
     !gameState.bigBlindPlayed
   ) {
     gameState.bigBlindPlayed = true;
@@ -254,7 +248,11 @@ const next = (table: Table) => {
     //probably needs to be players.length - 1
     gameState.activePosition <= players.length
   ) {
-    promptBet(table, player.username);
+    promptBet(
+      table,
+      //TODO: change back to player.username
+      players.find((p) => p.position === gameState.activePosition).username,
+    );
     return;
   }
   return;
