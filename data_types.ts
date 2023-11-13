@@ -87,3 +87,10 @@ export type Card = [string, {
   name?: string;
   image?: string;
 }];
+export interface BetInput {
+  table: Table;
+  player: Player;
+  action?: string;
+  betAmount: number;
+  stage: string;
+}
