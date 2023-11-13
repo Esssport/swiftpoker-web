@@ -123,9 +123,9 @@ const handleWinnings = (table: Table, state: GameState) => {
 };
 
 //TODO: deal hands after the blinds have been placed.
-// let nextCounter = 0;
+let nextCounter = 0;
 const next = (table: Table) => {
-  // nextCounter += 1;
+  nextCounter += 1;
   const gameState = allGameStates.get(table.id);
   // console.log("NEXT", nextCounter, "position", gameState.activePosition);
   const players = table.players;
@@ -137,7 +137,18 @@ const next = (table: Table) => {
   if (remainingPlayers.length === 1) {
     handleWinnings(table, gameState);
   }
-
+  console.log(
+    "NEXT",
+    nextCounter,
+    "position",
+    gameState.activePosition,
+    "player",
+    player?.username,
+    "player.position",
+    player?.position,
+    "stage",
+    stage,
+  );
   //check for bets to be matched
   if (gameState.activePosition > players.length - 1) {
     const unmatchedBets = players.filter((p) => {
@@ -502,12 +513,10 @@ const determinePositions = (players: Player[], state: GameState) => {
     }
     if (state.nextRound === true) {
       console.log("NEXT ROUND");
-      // player.position += 1;
-      //TODO:
-      player.position = i;
-      // if (player.position >= players.length) {
-      //   player.position = 0;
-      // }
+      player.position += 1;
+      if (player.position >= players.length) {
+        player.position = 0;
+      }
     }
 
     if (player.position === players.length - 1) {
