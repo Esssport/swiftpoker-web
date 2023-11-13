@@ -130,8 +130,7 @@ const next = (table: Table) => {
   // console.log("NEXT", nextCounter, "position", gameState.activePosition);
   const players = table.players;
   const stage = gameState.stage;
-  let player = players.find((p) => p.position === gameState.activePosition) ||
-    players[0];
+  let player = players.find((p) => p.position === gameState.activePosition);
 
   let remainingPlayers = players.filter((p) => !p.folded);
   if (remainingPlayers.length === 1) {
@@ -206,6 +205,7 @@ const next = (table: Table) => {
     return;
   }
 
+  //probably remove it since there's a semi duplicate below
   if (!player) {
     gameState.activePosition = 0;
     player = players.find((p) => p.position === gameState.activePosition);
@@ -337,12 +337,12 @@ const askTOBet = (
 const promptBet = (table: Table, username: string) => {
   //TODO: set a timer for folding if no bet is placed
   const gameState = allGameStates.get(table.id);
-  if (gameState.promptingFor === username) return;
+  // if (gameState.promptingFor === username) return;
   //TODO: Prompt any user who has not folded or isn't equal to the highest bet
   const players = table.players;
-  const player = players.find((p) => p.position === gameState.activePosition);
+  // const player = players.find((p) => p.position === gameState.activePosition);
+  const player = players.find((p) => p.username === username);
 
-  if (!player || player.username !== username) return;
   gameState.promptingFor = username;
   console.log("prompting", username);
   askTOBet(table, username);
@@ -462,7 +462,7 @@ const placeBet = (
     stage === "preflop" && player.position === 0 &&
     gameState.highestBets[stage] === table.blinds.big
   ) {
-    const bigBlindPlayer = table.players.find((p) => p.position === 1);
+    const bigBlindPlayer = table.players.find((p) => p.role === "bigBlind");
     askTOBet(table, bigBlindPlayer.username, ["check", "raise"]);
     return;
   }
