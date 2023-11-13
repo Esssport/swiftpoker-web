@@ -193,7 +193,12 @@ const Main: Component = () => {
         <h1 class="font-bold text-blue-300">
           Community cards
         </h1>
-        <p>TODO</p>
+        <For
+          each={table()?.communityCards}
+          fallback={<p>cards are not dealt yet</p>}
+        >
+          {(card) => <p>{JSON.stringify(card)}</p>}
+        </For>
       </section>
       <section class="md:container md:mx-auto" style="padding-bottom: 25px;">
         <h1 class="font-bold text-blue-300">

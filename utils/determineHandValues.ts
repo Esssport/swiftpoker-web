@@ -405,6 +405,5 @@ export const determineHandValues = (table: Table, state): any[] => {
     return hand;
   });
 
-  console.log("playerCards", playerCards);
   return results;
 };

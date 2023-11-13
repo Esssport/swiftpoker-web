@@ -1,6 +1,8 @@
 //move send and broadcast to utils
-import { broadcast, send } from "../api/handleJoinTable.ts";
+import { send } from "../api/handleJoinTable.ts";
 import { Card, GameState, Player, Table } from "../data_types.ts";
+import { determineHandValues } from "./determineHandValues.ts";
+import { determineWinners } from "./determineWinners.ts";
 const allGameStates = new Map<
   number,
   GameState
@@ -24,7 +26,6 @@ export const startGame = async (
       activePosition: 0,
       stage: "preflop",
       hands: null,
-      gameStarted: false,
       newGame: true,
       smallBlindPlayed: false,
       bigBlindPlayed: false,
@@ -60,12 +61,72 @@ export const startGame = async (
   });
 };
 
+const handleWinnings = (table: Table, state: GameState) => {
+  const players = table.players;
+  //TODO: call this determineHandValues after every stage to let users know their hand value
+  const results = determineHandValues(table, state);
+  let winners = determineWinners(results);
+
+  //handle cases where everybody folds
+  let remainingPlayers = players.filter((p) => !p.folded);
+  if (remainingPlayers.length === 1) {
+    winners = [winners.find((result) => {
+      return result.username === remainingPlayers[0].username;
+    })];
+  } else {
+    if (winners.length === 1) {
+      players.find((p) => p.username === winners[0].username).chips +=
+        table.pot;
+    } else {
+      const splitPot = Math.floor(table.pot / winners.length);
+      console.log("splitPot", splitPot);
+      winners.forEach((winner) => {
+        players.find((p) => p.username === winner.username).chips += splitPot;
+      });
+    }
+  }
+
+  console.log(
+    "WINNER",
+    winners[0].username,
+    "won",
+    table.pot,
+    "chips",
+    "with",
+    winners[0].handName,
+  );
+
+  table.winners = winners;
+  console.log("WINNERS", table.winners);
+  table.pot = 0;
+  state.smallBlindPlayed = false;
+  state.bigBlindPlayed = false;
+  state.newGame = true;
+  state.activePosition = 0;
+  state.promptingFor = null;
+  state.highestBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+  state.hands = null;
+  state.stage = "preflop";
+
+  table.communityCards = [];
+  table.firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+
+  players.forEach((p) => {
+    p.bets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+    p.folded = false;
+    p.allIn = false;
+    p.hasChecked = false;
+    p.hand = [];
+  });
+  next(table);
+};
+
 //TODO: deal hands after the blinds have been placed.
-let nextCounter = 0;
+// let nextCounter = 0;
 const next = (table: Table) => {
-  nextCounter += 1;
+  // nextCounter += 1;
   const gameState = allGameStates.get(table.id);
-  console.log("NEXT", nextCounter, "position", gameState.activePosition);
+  // console.log("NEXT", nextCounter, "position", gameState.activePosition);
   const players = table.players;
   const stage = gameState.stage;
   let player = players.find((p) => p.position === gameState.activePosition) ||
@@ -73,17 +134,13 @@ const next = (table: Table) => {
 
   let remainingPlayers = players.filter((p) => !p.folded);
   if (remainingPlayers.length === 1) {
-    console.log("THE WINNER IS ", remainingPlayers[0].username);
-    gameState.smallBlindPlayed = false;
-    gameState.bigBlindPlayed = false;
-    return;
+    handleWinnings(table, gameState);
   }
 
   //check for bets to be matched
   if (gameState.activePosition > players.length - 1) {
-    console.log("STAGE", stage);
     const unmatchedBets = players.filter((p) => {
-      return p.bets[stage] < gameState.highestBets[stage];
+      return !p.folded && p.bets[stage] < gameState.highestBets[stage];
     });
 
     if (unmatchedBets.length > 0) {
@@ -100,12 +157,15 @@ const next = (table: Table) => {
     switch (stage) {
       case "preflop":
         gameState.stage = "flop";
+        table.communityCards = gameState.hands.flop;
         break;
       case "flop":
         gameState.stage = "turn";
+        table.communityCards.push(gameState.hands.turn);
         break;
       case "turn":
         gameState.stage = "river";
+        table.communityCards.push(gameState.hands.river);
         break;
       case "river":
         gameState.stage = "showdown";
@@ -113,17 +173,9 @@ const next = (table: Table) => {
       default:
         gameState.stage = "preflop";
     }
-    //show next card
 
     if (gameState.stage === "showdown") {
-      //showdown
-      gameState.activePosition = 0; //reset to the person after the big blind
-      // gameState.newGame = true;
-
-      //TODO: determine winner
-      console.log("THE WINNER IS ", player.username);
-      gameState.smallBlindPlayed = false;
-      gameState.bigBlindPlayed = false;
+      handleWinnings(table, gameState);
       return;
     }
 
@@ -148,9 +200,8 @@ const next = (table: Table) => {
   }
 
   if (gameState.newGame === true) {
-    gameState.newGame = false;
     populateHands(table.id, players);
-    determinePositions(players);
+    determinePositions(players, gameState);
   }
   if (!player) {
     console.log("NEWGAME activePosition", gameState.activePosition);
@@ -203,11 +254,12 @@ const askTOBet = (
   const players = table.players;
   const player = players.find((p) => p.username === username);
   const gameState = allGameStates.get(table.id);
+  const stage = gameState.stage;
   let actions = [];
-  if (table.firstBets[gameState.stage] === 0) {
+  if (table.firstBets[stage] === 0) {
     actions = ["check", "bet"];
   } else if (
-    player.chips + player.currentBet >= gameState.highestBets[gameState.stage]
+    player.chips + player.bets[stage] >= gameState.highestBets[stage]
   ) {
     actions = ["fold", "call", "raise"];
   } else {
@@ -272,7 +324,6 @@ const promptBet = (table: Table, username: string) => {
   //TODO: set a timer for folding if no bet is placed
   const gameState = allGameStates.get(table.id);
   if (gameState.promptingFor === username) return;
-  //handle bets
   //TODO: Prompt any user who has not folded or isn't equal to the highest bet
   const players = table.players;
   const player = players.find((p) => p.position === gameState.activePosition);
@@ -317,27 +368,26 @@ const takeAction = (input: BetInput) => {
   }
 
   if (action === "call") {
-    const deficitAmount = gameState.highestBets[stage] - player.bets[stage];
-    placeBet(table, player, deficitAmount, gameState);
+    const betAmount = gameState.highestBets[stage];
+    placeBet(table, player, betAmount, gameState);
     return;
   }
 
   // available actions ["check", "bet", "fold", "call", "raise"];
 
+  //TODO: possibly pass raise amount and raise range with actions, like raiseRange: [minimumRaise, player.chips]
+  if (action === "raise") {
+    const minimumRaise = table.firstBets[stage] * 2;
+    const isValidRaise = bet >= minimumRaise;
+    let raiseAmount = isValidRaise ? bet : minimumRaise;
+    // const deficitAmount = raiseAmount - player.bets[stage];
+    placeBet(table, player, raiseAmount, gameState);
+    return;
+  }
+
   if (action === "bet") {
     if (!isValidBet && !isFirstBet && !isAllIn) {
     }
-    // if (bet !== gameState.highestBets[stage]) {
-    //   console.log("You can't call");
-    //   askTOBet(table, player.username);
-    //   return;
-    // } else {
-    //   player.hasCalled = true;
-    //   gameState.activePosition += 1;
-    //   gameState.promptingFor = null;
-    //   next(table);
-    //   return;
-    // }
     placeBet(table, player, bet, gameState);
     return;
   }
@@ -377,10 +427,10 @@ const placeBet = (
   gameState: GameState,
 ) => {
   const stage = gameState.stage;
-  player.currentBet = bet + player.bets[stage];
-  player.bets[stage] = player.currentBet;
-  player.chips -= bet;
-  table.pot += bet;
+  const deficitAmount = bet - player.bets[stage];
+  player.bets[stage] = bet;
+  player.chips -= deficitAmount;
+  table.pot += deficitAmount;
 
   if (table.firstBets[stage] === 0 && bet >= table.blinds.big) {
     table.firstBets[stage] = bet;
@@ -416,11 +466,9 @@ const populateHands = (
   let gameState = allGameStates.get(tableID);
   let tableHands = gameState.hands;
   // also run if the game has ended, for next round
-  if (!tableHands || gameState.newGame) {
+  if (!tableHands) {
     const results = dealCards(tableID, players.length);
     gameState.hands = results;
-    gameState.gameStarted = true;
-    gameState.newGame = false;
   }
   const currentCards = gameState.hands;
   const handsCopy = [...currentCards.hands];
@@ -441,9 +489,9 @@ const populateHands = (
   });
 };
 
-const determinePositions = (players: Player[], nextRound = false) => {
-  return players.forEach((player, i) => {
-    if (nextRound) {
+const determinePositions = (players: Player[], state: GameState) => {
+  players.forEach((player, i) => {
+    if (state.newGame === true) {
       player.position = player.position + 1;
       if (player.position >= players.length - 1) {
         //TODO : check if this is correct
@@ -469,6 +517,8 @@ const determinePositions = (players: Player[], nextRound = false) => {
     }
     return player;
   });
+  state.newGame = false;
+  return players;
 };
 
 const stack = [

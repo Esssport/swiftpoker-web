@@ -11,19 +11,12 @@ export type Player = {
   folded?: boolean;
   allIn?: boolean;
   disconnected?: boolean;
-  totalBet?: number;
-  currentBet?: number;
   bets?: { preflop?: number; flop?: number; turn?: number; river?: number };
-  played?: boolean;
-  flop?: Card[];
-  turn?: Card;
-  river?: Card;
   username?: string;
   wallet?: string;
   position?: number;
-  currentHand?: number;
   tablesRegistered?: number[];
-  handHistory?: number[];
+  handHistory?: Card[];
   totalWinnings?: number;
   totalHandsWon?: number;
   balance?: number;
@@ -35,7 +28,6 @@ export type GameState = {
   activePlayer?: Player;
   stage: string;
   hands: { hands: Card[]; flop: Card[]; turn: Card; river: Card };
-  gameStarted: boolean;
   newGame: boolean;
   smallBlindPlayed: boolean;
   bigBlindPlayed: boolean;
@@ -51,29 +43,22 @@ export type Tournament = {
   name?: string;
   startedAt: string;
   maxPlayers: number;
-  signedUpPlayers: number;
   currentPlayers: number;
   speed?: "Normal" | "Fast" | "Hyper";
 };
 
 export type Table = {
+  winners?: Result[];
   type?: string;
   id?: number;
   name?: string;
   startedAt?: string;
   maxPlayers?: number;
-  players?: Player[]; // Map of User to their current bet
-  dealer?: number;
-  currentBet?: number;
+  players?: Player[];
   speed?: "Normal" | "Fast" | "Hyper";
-  deck?: number[];
-  communityCards?: number[];
+  communityCards?: Card[];
   currentRound?: number;
   handHistory?: Card[];
-  winner?: number;
-  winnerHand?: number[];
-  winnerHandType?: string;
-  winnerHandRank?: number;
   lateRegistration?: true;
   running?: false;
   pot?: number;
