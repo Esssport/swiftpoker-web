@@ -1,5 +1,4 @@
 import { placeBet } from "./placeBet.ts";
-import { allGameStates } from "./Dealer.ts";
 import { next } from "./next.ts";
 import { askTOBet } from "./askTOBet.ts";
 import { BetInput } from "../data_types.ts";
@@ -10,7 +9,7 @@ export const takeAction = (input: BetInput) => {
   const isAllIn = betAmount >= player.chips;
   const bet = isAllIn ? player.chips : betAmount;
 
-  const gameState = allGameStates.get(table.id);
+  const gameState = table.GameState;
   const isBlind = player.role === "smallBlind" || player.role === "bigBlind";
   const isFirstBet = table.firstBets[stage] === 0;
   const isValidRaise = !isFirstBet && bet >= table.firstBets[stage] * 2;

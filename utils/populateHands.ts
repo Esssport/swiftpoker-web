@@ -1,17 +1,16 @@
-import { Player } from "../data_types.ts";
+import { Player, Table } from "../data_types.ts";
 import { dealCards } from "./dealCards.ts";
-import { allGameStates } from "./Dealer.ts";
 
 export const populateHands = (
-  tableID: number,
-  players: Player[],
+  table: Table,
   stage: string = null,
 ) => {
-  let gameState = allGameStates.get(tableID);
+  const players = table.players;
+  let gameState = table.GameState;
   let tableHands = gameState.hands;
   // also run if the game has ended, for next round
   if (!tableHands || gameState.newGame) {
-    const results = dealCards(tableID, players.length);
+    const results = dealCards(table.id, players.length);
     gameState.hands = results;
   }
   const currentCards = gameState.hands;

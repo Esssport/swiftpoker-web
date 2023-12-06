@@ -28,7 +28,16 @@ export const handleCreateTable = async (
     firstBets: { preflop: 0, flop: 0, turn: 0, river: 0 },
     pot: 0,
     type: "cash",
-    GameState: undefined,
+    GameState: {
+      activePosition: 0,
+      stage: "preflop",
+      hands: undefined,
+      newGame: true,
+      smallBlindPlayed: undefined,
+      bigBlindPlayed: undefined,
+      promptingFor: undefined,
+      highestBets: { preflop: 0, flop: 0, turn: 0, river: 0 },
+    },
   };
 
   serverTables.set(tableNumber, tableObj);

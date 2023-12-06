@@ -4,14 +4,13 @@ import { handleWinnings } from "./handleWinnings.ts";
 import { populateHands } from "./populateHands.ts";
 import { promptBet } from "./promptBet.ts";
 import { takeAction } from "./takeAction.ts";
-import { allGameStates } from "./Dealer.ts";
 
 //TODO: deal hands after the blinds have been placed.
 export let nextCounter = 0;
 
 export const next = (table: Table) => {
   nextCounter += 1;
-  const gameState = allGameStates.get(table.id);
+  const gameState = table.GameState;
   // console.log("NEXT", nextCounter, "position", gameState.activePosition);
   const players = table.players;
   const stage = gameState.stage;
@@ -75,7 +74,7 @@ export const next = (table: Table) => {
       return;
     }
 
-    populateHands(table.id, players, gameState.stage);
+    populateHands(table, gameState.stage);
     next(table);
     return;
   }
@@ -91,7 +90,7 @@ export const next = (table: Table) => {
 
   if (gameState.newGame) {
     determinePositions(players, gameState);
-    populateHands(table.id, players);
+    populateHands(table);
 
     // players.forEach((p) => {
     //   console.log("PLAYER", p.username, "position", p.position);

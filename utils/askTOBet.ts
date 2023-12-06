@@ -1,6 +1,5 @@
 import { send } from "../api/handleJoinTable.ts";
 import { Table } from "../data_types.ts";
-import { allGameStates } from "./Dealer.ts";
 
 export const askTOBet = (
   table: Table,
@@ -9,7 +8,7 @@ export const askTOBet = (
 ) => {
   const players = table.players;
   const player = players.find((p) => p.username === username);
-  const gameState = allGameStates.get(table.id);
+  const gameState = table.GameState;
   const stage = gameState.stage;
   let actions = [];
   if (table.firstBets[stage] === 0) {

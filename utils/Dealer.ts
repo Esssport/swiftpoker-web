@@ -2,10 +2,6 @@
 import { GameState, Table } from "../data_types.ts";
 import { next } from "./next.ts";
 import { takeAction } from "./takeAction.ts";
-export const allGameStates = new Map<
-  number,
-  GameState
->();
 
 export const startGame = async (
   username,
@@ -20,18 +16,6 @@ export const startGame = async (
     return;
   }
 
-  if (!allGameStates.has(tableID)) {
-    allGameStates.set(tableID, {
-      activePosition: 0,
-      stage: "preflop",
-      hands: undefined,
-      newGame: true,
-      smallBlindPlayed: undefined,
-      bigBlindPlayed: undefined,
-      promptingFor: undefined,
-      highestBets: { preflop: 0, flop: 0, turn: 0, river: 0 },
-    });
-  }
   const player = players.find((p) => p.username === username);
 
   next(table);
@@ -42,7 +26,7 @@ export const startGame = async (
   players.forEach((player) => {
     player.socket.onmessage = (m) => {
       const data = JSON.parse(m.data);
-      const gameState = allGameStates.get(table.id);
+      const gameState = table.GameState;
       console.log("msg in server: ", data);
       switch (data.event) {
         case "action-taken":
