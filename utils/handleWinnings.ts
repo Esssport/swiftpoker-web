@@ -1,3 +1,4 @@
+import { broadcast } from "../api/handleJoinTable.ts";
 import { GameState, Table } from "../data_types.ts";
 import { determineHandValues } from "./determineHandValues.ts";
 import { determineWinners } from "./determineWinners.ts";
@@ -29,38 +30,43 @@ export const handleWinnings = (table: Table, state: GameState) => {
     }
   }
   table.winners = winners;
+  //TODO: handle case where there is a tie or somebody folds
+  const winnerPrompt = `${winners[0].username} won ${table.pot} chips with ${
+    winners[0].handName
+  }`;
 
-  console.log(
-    "WINNER",
-    winners[0].username,
-    "won",
-    table.pot,
-    "chips",
-    "with",
-    winners[0].handName,
-  );
+  console.log("WINNERS", winnerPrompt);
 
-  console.log("WINNERS", table.winners);
-  table.pot = 0;
-  state.smallBlindPlayed = false;
-  state.bigBlindPlayed = false;
-  state.newGame = true;
-  state.activePosition = 0;
-  state.promptingFor = null;
-  state.highestBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
-  state.hands = null;
-  state.stage = "preflop";
-  state.nextRound = true;
+  broadcast({
+    event: "table-updated",
+    payload: {
+      table,
+      prompt: "Hand over! " + winnerPrompt,
+    },
+  }, table.id);
 
-  table.communityCards = [];
-  table.firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+  //IF goNextRound is true, then go to next round
 
-  players.forEach((p) => {
-    p.bets = { preflop: 0, flop: 0, turn: 0, river: 0 };
-    p.folded = false;
-    p.allIn = false;
-    p.hasChecked = false;
-    p.hand = [];
-  });
-  next(table);
+  // table.pot = 0;
+  // state.smallBlindPlayed = false;
+  // state.bigBlindPlayed = false;
+  // state.newGame = true;
+  // state.activePosition = 0;
+  // state.promptingFor = null;
+  // state.highestBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+  // state.stage = "preflop";
+  // state.nextRound = true;
+  // state.hands = null;
+  // table.communityCards = [];
+  // table.firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+
+  // players.forEach((p) => {
+  //   p.bets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+  //   p.folded = false;
+  //   p.allIn = false;
+  //   p.hasChecked = false;
+  //   p.hand = [];
+  // });
+  // next(table);
+  return;
 };
