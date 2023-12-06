@@ -4,8 +4,7 @@
     "allowJs": true,
     "lib": ["deno.window", "dom", "DOM", "es2022"],
     "types": ["vite/client", "jsx", "react", "tsx", "ts"],
-    "strict": true,
-    "exclude": ["/public/*"]
+    "strict": true
   },
 
   "lint": {

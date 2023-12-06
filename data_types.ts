@@ -66,6 +66,7 @@ export type Table = {
   blinds?: { small: number; big: number };
   firstBets?: { preflop: number; flop: number; turn: number; river: number };
   buyInRange?: { min: number; max: number };
+  GameState?: GameState;
 };
 
 export type Result = {

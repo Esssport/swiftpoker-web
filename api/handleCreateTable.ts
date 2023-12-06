@@ -1,7 +1,11 @@
 import { Table } from "../data_types.ts";
 let tableNumber = 0;
 export const handleCreateTable = async (
-  ctx,
+  ctx: {
+    state: { tables: Map<number, Table> };
+    request: { url: { searchParams: { get: (arg0: string) => any } } };
+    response: { body: string };
+  },
 ) => {
   const serverTables = ctx.state.tables as Map<
     number,
@@ -24,6 +28,7 @@ export const handleCreateTable = async (
     firstBets: { preflop: 0, flop: 0, turn: 0, river: 0 },
     pot: 0,
     type: "cash",
+    GameState: undefined,
   };
 
   serverTables.set(tableNumber, tableObj);

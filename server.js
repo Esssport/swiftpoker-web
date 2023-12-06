@@ -5,7 +5,7 @@ import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 import { handleTables } from "./api/handleTables.ts";
 import { handleTable } from "./api/handleTable.ts";
 
-const app = new Application();
+export const app = new Application();
 const router = new Router();
 const port = 8080;
 const serverTables = new Map();
