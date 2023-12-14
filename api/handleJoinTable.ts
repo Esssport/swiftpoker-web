@@ -1,7 +1,9 @@
-const sockets = new Map<string, WebSocket>();
-const tableIDs = new Map();
+export const sockets = new Map<string, WebSocket>();
+export const tableIDs = new Map();
 import { Player, Table } from "../data_types.ts";
 import { startGame } from "../utils/Dealer.ts";
+import { send } from "./broadcast.ts";
+import { broadcast } from "./broadcast.ts";
 
 export const handleJoinTable = async (ctx) => {
   let interval;
@@ -114,29 +116,4 @@ export const handleJoinTable = async (ctx) => {
       p.username !== username
     );
   };
-};
-
-// send a message to all connected clients
-export const broadcast = (message, tableID = null) => {
-  sockets.forEach(
-    (socket, username) => {
-      if (!tableID) {
-        socket.send(
-          JSON.stringify(message),
-        );
-      }
-      if (tableID && tableIDs.get(username) === tableID) {
-        socket.send(
-          JSON.stringify(message),
-        );
-      }
-    },
-  );
-};
-
-export const send = (socket, message) => {
-  console.log("SENDING event", message.event);
-  socket.send(
-    JSON.stringify(message),
-  );
 };

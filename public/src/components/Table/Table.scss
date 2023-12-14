@@ -1,0 +1,40 @@
+section.table {
+    // background-color: brown;
+    width: 100%;
+    max-width: 850px;
+    height: 100vh;
+    background-image: url(/src/assets/tables/bg-vertical.jpeg);
+    filter: opacity(0.8) contrast(1.2);;
+    background-size: cover;
+
+    color: black;
+
+
+  
+  .player {
+    position: absolute;
+    display: flex;
+    top: 50%;
+    left: 50%;
+    width: 80px;
+    height: 80px;
+    margin: -15px 0 0 -15px; /* half the width/height */
+  
+}
+
+.player-image-section {
+    padding: 7px;
+    border-radius: 50%;
+  }
+
+  button.player-image-section {
+    background: rgb(255, 190, 50);
+
+  }
+  
+  /* Rotate each player around the table */
+  .player:nth-child(1) { transform: rotate(0deg) translate(150px) rotate(0deg); }
+  .player:nth-child(2) { transform: rotate(120deg) translate(150px) rotate(-120deg); }
+  .player:nth-child(3) { transform: rotate(240deg) translate(150px) rotate(-240deg); }
+  .player:nth-child(4) { transform: rotate(240deg) translate(240px, 240px) rotate(-240deg); }
+}

@@ -1,5 +1,5 @@
 import { Component, createSignal, For } from "solid-js";
-import { GameState, Player, Table } from "../../data_types.ts";
+import { GameState, Player, Table } from "../../../../data_types.ts";
 let userSocket: WebSocket;
 let userID: string;
 let currenBet: number;
@@ -88,18 +88,18 @@ export const Lobby: Component = () => {
     <>
       <div class="md:w-2/3">
         <input
-          class="max-w-sm bg-gray-900 appearance-none border-2 border-gray-500 rounded w-full py-2 px-4 text-gray-200 leading-tight focus:outline-none focus:bg-black focus:border-purple-500"
-          id="username"
-          type="text"
-          value="a"
-        />
-      </div>
-      <div class="md:w-2/3">
-        <input
           class="max-w-sm bg-green-900 appearance-none border-2 border-gray-500 rounded w-full py-2 px-4 text-gray-200 leading-tight focus:outline-none focus:bg-black focus:border-purple-500"
           id="tableID"
           type="text"
           value="1"
+        />
+      </div>
+      <div class="md:w-2/3">
+        <input
+          class="max-w-sm bg-gray-900 appearance-none border-2 border-gray-500 rounded w-full py-2 px-4 text-gray-200 leading-tight focus:outline-none focus:bg-black focus:border-purple-500"
+          id="username"
+          type="text"
+          value="a"
         />
       </div>
       <div class="md:w-2/3">

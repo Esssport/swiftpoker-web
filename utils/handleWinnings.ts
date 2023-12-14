@@ -1,4 +1,4 @@
-import { broadcast } from "../api/handleJoinTable.ts";
+import { broadcast } from "../api/broadcast.ts";
 import { GameState, Table } from "../data_types.ts";
 import { determineHandValues } from "./determineHandValues.ts";
 import { determineWinners } from "./determineWinners.ts";

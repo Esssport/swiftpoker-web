@@ -1,4 +1,4 @@
-import { send } from "../api/handleJoinTable.ts";
+import { send } from "../api/broadcast.ts";
 import { Table } from "../data_types.ts";
 
 export const askTOBet = (

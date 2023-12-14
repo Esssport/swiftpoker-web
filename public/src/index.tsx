@@ -2,8 +2,8 @@
 import "./index.scss";
 import { render } from "solid-js/web";
 import { Route, Router } from "@solidjs/router";
-import { Lobby } from "./Lobby.tsx";
-import { Table } from "./Table.tsx";
+import { Lobby } from "./components/Lobby/Lobby.tsx";
+import { Table } from "./components/Table/Table.tsx";
 
 const root = document.getElementById("root");
 
@@ -17,7 +17,7 @@ render(
   () => (
     <Router>
       <Route path="/" component={Lobby} />
-      <Route path="/test" component={Table} />
+      <Route path="/tables/:tableID" component={Table} />
     </Router>
   ),
   root!,
