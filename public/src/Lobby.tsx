@@ -1,17 +1,17 @@
-import {
-  type Component,
-  createEffect,
-  createSignal,
-  For,
-  onMount,
-} from "solid-js";
-// TODO: Add the ability to reconnect to a table after getting disconnected store in local storage or a cookie
+import { Component, createSignal, For } from "solid-js";
+import { GameState, Player, Table } from "../../data_types.ts";
 let userSocket: WebSocket;
 let userID: string;
 let currenBet: number;
 
-import type { GameState, Player, Table } from "../../data_types.ts";
-function joinTable() {
+const [players, setPlayers] = createSignal<Player[]>([]);
+const [gameState, setGameState] = createSignal<GameState>();
+const [prompts, setPrompts] = createSignal([]);
+const [table, setTable] = createSignal<Table>();
+const [actions, setActions] = createSignal([]);
+const [activeUser, setActiveUser] = createSignal("");
+
+const joinTable = () => {
   const usernameElement = document.getElementById(
     "username",
   ) as HTMLInputElement;
@@ -78,65 +78,12 @@ function joinTable() {
         break;
     }
   };
-}
-
-const takeAction = (action: string) => () => {
-  const betAmount = document.getElementById(
-    "betAmount",
-  ) as HTMLInputElement;
-  const finalBetAmount = !!betAmount.value
-    ? +betAmount.value
-    : table().blinds.big;
-  currenBet = finalBetAmount;
-  userSocket.send(
-    //TODO: include userID in payload potentially
-    JSON.stringify({
-      event: "action-taken",
-      payload: { betAmount: currenBet, userID, action },
-    }),
-  );
-  console.log("action taken", action);
 };
-
-// function getTableData(tableID = 1) {
-//   fetch(`http://localhost:8080/tables/${tableID}`)
-//     .then((response) => {
-//       response.json().then((data) => {
-//         // setTableData(data);
-//       });
-//     })
-//     .catch((err) => console.log(err));
-// }
-
-function createTable() {
-  const tableLimit = prompt("How many people can join this table?") || 10;
-  const request = new Request(
-    `http://localhost:8080/tables/create?limit=${tableLimit}`,
-    {
-      method: "GET",
-    },
-  );
-  fetch(request).then((response) => {
-    console.log("message", response);
-    response.json().then((data) => {
-      // setTableData(data);
-    });
-  })
-    .catch((err) => console.log(err));
-}
-
-const [players, setPlayers] = createSignal<Player[]>([]);
-const [gameState, setGameState] = createSignal<GameState>();
-const [prompts, setPrompts] = createSignal([]);
-const [table, setTable] = createSignal<Table>();
-const [actions, setActions] = createSignal([]);
-const [activeUser, setActiveUser] = createSignal("");
 
 // createEffect(() => {
 //   getTableData();
 // });
-
-const Main: Component = () => {
+export const Lobby: Component = () => {
   return (
     <>
       <div class="md:w-2/3">
@@ -242,12 +189,45 @@ const Main: Component = () => {
   );
 };
 
-const App: Component = () => {
-  return <Main />;
+const takeAction = (action: string) => () => {
+  const betAmount = document.getElementById(
+    "betAmount",
+  ) as HTMLInputElement;
+  const finalBetAmount = !!betAmount.value
+    ? +betAmount.value
+    : table().blinds.big;
+  currenBet = finalBetAmount;
+  userSocket.send(
+    //TODO: include userID in payload potentially
+    JSON.stringify({
+      event: "action-taken",
+      payload: { betAmount: currenBet, userID, action },
+    }),
+  );
+  console.log("action taken", action);
 };
-
-export default App;
-
-// // on page load
-// window.onload = () => {
+// function getTableData(tableID = 1) {
+//   fetch(`http://localhost:8080/tables/${tableID}`)
+//     .then((response) => {
+//       response.json().then((data) => {
+//         // setTableData(data);
+//       });
+//     })
+//     .catch((err) => console.log(err));
 // }
+const createTable = () => {
+  const tableLimit = prompt("How many people can join this table?") || 10;
+  const request = new Request(
+    `http://localhost:8080/tables/create?limit=${tableLimit}`,
+    {
+      method: "GET",
+    },
+  );
+  fetch(request).then((response) => {
+    console.log("message", response);
+    response.json().then((data) => {
+      // setTableData(data);
+    });
+  })
+    .catch((err) => console.log(err));
+};

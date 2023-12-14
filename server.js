@@ -16,6 +16,9 @@ router.get("/tables/join/:tableID", handleJoinTable);
 // router.get("/tables", handleCreateTable);
 router.get("/tables", handleTables);
 router.get("/tables/:tableID", handleTable);
+router.get("/test", (ctx) => {
+  ctx.response.body = "Hello World TESTING!";
+});
 //router.get("/users/", handleJoinTable);
 //router.get("/users/userID", handleJoinTable);
 // handle table info, returns info about table. table info can be stored as a
