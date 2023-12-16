@@ -42,6 +42,8 @@ app.use(async (ctx, next) => {
 // table listener, probably authenticator
 app.use(async (ctx, next) => {
   ctx.state.tables = serverTables;
+
+  //generate initial tables
   await next();
 });
 

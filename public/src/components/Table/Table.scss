@@ -16,14 +16,14 @@ section.table {
     display: flex;
     top: 50%;
     left: 50%;
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
     margin: -15px 0 0 -15px; /* half the width/height */
   
 }
 
 .player-image-section {
-    padding: 7px;
+    padding: 20%;
     border-radius: 50%;
   }
 
@@ -33,8 +33,10 @@ section.table {
   }
   
   /* Rotate each player around the table */
-  .player:nth-child(1) { transform: rotate(0deg) translate(150px) rotate(0deg); }
-  .player:nth-child(2) { transform: rotate(120deg) translate(150px) rotate(-120deg); }
-  .player:nth-child(3) { transform: rotate(240deg) translate(150px) rotate(-240deg); }
-  .player:nth-child(4) { transform: rotate(240deg) translate(240px, 240px) rotate(-240deg); }
+  .player:nth-child(1) { transform: translate(220px, 120px)  }
+  .player:nth-child(2) { transform: translate(220px, -120px)  }
+  .player:nth-child(3) { transform: translate(100px, -320px)  }
+  .player:nth-child(4) { transform: translate(-140px, -320px)  }
+  .player:nth-child(5) { transform: translate(-260px, 120px)  }
+  .player:nth-child(6) { transform: translate(-260px, -120px)  }
 }
