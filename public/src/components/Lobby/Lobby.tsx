@@ -1,4 +1,4 @@
-import { Component, createSignal, For } from "solid-js";
+import { Component, createSignal, For, onMount } from "solid-js";
 import { GameState, Player, Table } from "../../../../data_types.ts";
 let userSocket: WebSocket;
 let userID: string;
@@ -84,6 +84,9 @@ const joinTable = () => {
 //   getTableData();
 // });
 export const Lobby: Component = () => {
+  onMount(() => {
+    createTable();
+  });
   return (
     <>
       <div class="md:w-2/3">
@@ -124,12 +127,6 @@ export const Lobby: Component = () => {
           )}
         </For>
       </div>
-      <button
-        class="bg-blue hover:bg-gray-100 text-gray-200 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
-        onClick={createTable}
-      >
-        Create Table
-      </button>
       <button
         class="bg-blue hover:bg-gray-100 text-gray-200 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
         onClick={joinTable}
@@ -216,9 +213,8 @@ const takeAction = (action: string) => () => {
 //     .catch((err) => console.log(err));
 // }
 const createTable = () => {
-  const tableLimit = prompt("How many people can join this table?") || 10;
   const request = new Request(
-    `http://localhost:8080/tables/create?limit=${tableLimit}`,
+    `http://localhost:8080/tables/create?limit=10`,
     {
       method: "GET",
     },

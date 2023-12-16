@@ -1,6 +1,6 @@
 import { Application, Router } from "https://deno.land/x/oak@v12.5.0/mod.ts";
 import { handleJoinTable } from "./api/handleJoinTable.ts";
-import { handleCreateTable } from "./api/handleCreateTable.ts";
+import { handleCreateTables } from "./api/handleCreateTables.ts";
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 import { handleTables } from "./api/handleTables.ts";
 import { handleTable } from "./api/handleTable.ts";
@@ -10,8 +10,7 @@ const router = new Router();
 const port = 8080;
 const serverTables = new Map();
 // const allUsers = new Map();
-
-router.get("/tables/create", handleCreateTable);
+router.get("/tables/create", handleCreateTables);
 router.get("/tables/join/:tableID", handleJoinTable);
 // router.get("/tables", handleCreateTable);
 router.get("/tables", handleTables);

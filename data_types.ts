@@ -55,8 +55,10 @@ export type Table = {
   name?: string;
   startedAt?: string;
   maxPlayers?: number;
+  minPlayers?: number;
+  waitingList?: Player[];
+  sitOutPlayers?: Player[];
   players?: Player[];
-  speed?: "Normal" | "Fast" | "Hyper";
   communityCards?: Card[];
   currentRound?: number;
   handHistory?: Card[];
