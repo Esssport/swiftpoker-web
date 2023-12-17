@@ -17,7 +17,7 @@ const joinSimilarTable = () => {
   ) as HTMLInputElement;
   const username = usernameElement.value;
   const request = new Request(
-    `http://localhost:8080/tables/join/`,
+    `http://localhost:8080/tables/select/`,
     {
       method: "POST",
       body: JSON.stringify({

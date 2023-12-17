@@ -1,7 +1,7 @@
 import { Table as TableType } from "../data_types.ts";
 import { Table, TableConfig } from "../utils/tableBlueprint.ts";
 
-export const handleJoinSimilarTable = async (ctx) => {
+export const handleTableSelection = async (ctx) => {
   const serverTables = ctx.state.tables as Map<number, TableType>;
   const requestParams = JSON.parse(
     await (ctx.request.body()).value,
