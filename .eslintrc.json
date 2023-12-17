@@ -6,12 +6,12 @@
       "deno.window",
       "dom",
       "DOM",
-      "es2022"
+      "es2023"
     ]
   },
   "env": {
     "browser": true,
-    "es2021": true,
+    "es2023": true,
     "node": true
   },
   "extends": [

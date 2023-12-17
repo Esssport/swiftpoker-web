@@ -4,6 +4,7 @@ import { handleCreateTables } from "./api/handleCreateTables.ts";
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 import { handleTables } from "./api/handleTables.ts";
 import { handleTable } from "./api/handleTable.ts";
+import { handleJoinSimilarTable } from "./api/handleJoinSimilarTable.ts";
 
 export const app = new Application();
 const router = new Router();
@@ -12,6 +13,7 @@ const serverTables = new Map();
 // const allUsers = new Map();
 router.get("/tables/create", handleCreateTables);
 router.get("/tables/join/:tableID", handleJoinTable);
+router.post("/tables/join/", handleJoinSimilarTable);
 // router.get("/tables", handleCreateTable);
 router.get("/tables", handleTables);
 router.get("/tables/:tableID", handleTable);

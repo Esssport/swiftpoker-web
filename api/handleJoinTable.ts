@@ -12,6 +12,7 @@ export const handleJoinTable = async (ctx) => {
     number,
     Table
   >;
+
   const socket: WebSocket = await ctx.upgrade();
 
   const username = ctx.request.url.searchParams.get("username") as string;

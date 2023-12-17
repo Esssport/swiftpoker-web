@@ -11,13 +11,40 @@ const [table, setTable] = createSignal<Table>();
 const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
 
+const joinSimilarTable = () => {
+  const usernameElement = document.getElementById(
+    "username",
+  ) as HTMLInputElement;
+  const username = usernameElement.value;
+  const request = new Request(
+    `http://localhost:8080/tables/join/`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        buyInRange: { min: 4000, max: 10000 },
+        blinds: { small: 50, big: 100 },
+        buyInAmount: 5000,
+        type: "playmoney",
+        maxPlayers: 2,
+        username,
+        //TODO: add a token
+      }),
+    },
+  );
+  fetch(request).then((response) => {
+    console.log("message", response);
+    response.json().then((data) => {
+      // setTableData(data);
+    });
+  });
+};
+
 const joinTable = () => {
   const usernameElement = document.getElementById(
     "username",
   ) as HTMLInputElement;
-  const tableID = document.getElementById("tableID") as HTMLInputElement;
-
   const username = usernameElement.value;
+  const tableID = document.getElementById("tableID") as HTMLInputElement;
   userID = username;
   //TODO: Add Try catch block
   const serverSocket = new WebSocket(
@@ -129,7 +156,8 @@ export const Lobby: Component = () => {
       </div>
       <button
         class="bg-blue hover:bg-gray-100 text-gray-200 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
-        onClick={joinTable}
+        onClick={joinSimilarTable}
+        // onClick={joinTable}
       >
         Join Table
       </button>

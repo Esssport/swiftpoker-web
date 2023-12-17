@@ -1,4 +1,4 @@
-export type Player = {
+export interface Player {
   isDealer?: boolean;
   hasChecked?: boolean;
   hand?: Card[];
@@ -20,9 +20,9 @@ export type Player = {
   totalWinnings?: number;
   totalHandsWon?: number;
   balance?: number;
-};
+}
 
-export type GameState = {
+export interface GameState {
   nextRound?: boolean;
   activePosition: number;
   //TODO: use to replace waitingFor
@@ -34,9 +34,9 @@ export type GameState = {
   bigBlindPlayed: boolean;
   promptingFor: string;
   highestBets: { preflop: number; flop: number; turn: number; river: number };
-};
+}
 
-export type Tournament = {
+export interface Tournament {
   id?: number;
   blinds: number[];
   GuaranteedAmount: number;
@@ -46,15 +46,15 @@ export type Tournament = {
   maxPlayers: number;
   currentPlayers: number;
   speed?: "Normal" | "Fast" | "Hyper";
-};
+}
 
-export type Table = {
+export interface Table {
   winners?: Result[];
-  type?: string;
+  type: string;
   id?: number;
   name?: string;
   startedAt?: string;
-  maxPlayers?: number;
+  maxPlayers: number;
   minPlayers?: number;
   waitingList?: Player[];
   sitOutPlayers?: Player[];
@@ -65,11 +65,11 @@ export type Table = {
   lateRegistration?: true;
   running?: false;
   pot?: number;
-  blinds?: { small: number; big: number };
+  blinds: { small: number; big: number };
   firstBets?: { preflop: number; flop: number; turn: number; river: number };
-  buyInRange?: { min: number; max: number };
+  buyInRange: { min: number; max: number };
   GameState?: GameState;
-};
+}
 
 export type Result = {
   username?: string;
