@@ -7,7 +7,7 @@ export const handleTableSelection = async (ctx) => {
     await (ctx.request.body()).value,
   ) as TableConfig;
   //validate all values from requestParams
-  console.log("requestParams", requestParams);
+  // console.log("requestParams", requestParams);
   const tablesArray = [...serverTables];
   const lastSimilarTable = tablesArray.findLast((tableArray) => {
     const table = tableArray[1];
@@ -52,14 +52,15 @@ export const handleTableSelection = async (ctx) => {
     //TODO: add the user to the potential table
   }
 
-  console.log("newTable", newTable);
+  // console.log("newTable", newTable);
   serverTables.set(newTable.id, newTable);
 
   // console.log("potentialTable", potentialTable);
 
   // console.log("lastSimilarTable", lastSimilarTable);
-  // ctx.response.body = Array.from(serverTables);
-  ctx.response.body = JSON.stringify(
-    `/tables/${newTable.id}?username=${requestParams.username}&buyInAmount=${requestParams.buyInAmount}`,
-  );
+  ctx.response.body = JSON.stringify({
+    tableID: newTable.id,
+    username: requestParams.username,
+    buyInAmount: requestParams.buyInAmount,
+  });
 };

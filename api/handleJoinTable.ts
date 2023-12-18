@@ -12,11 +12,16 @@ export const handleJoinTable = async (ctx) => {
     number,
     Table
   >;
+  const tableID = Number(ctx.params.tableID) as number;
+  const username = ctx.request.url.searchParams.get("username") as string;
+  const buyInAmount = Number(ctx.request.url.searchParams.get(
+    "buyInAmount",
+  )) as number;
 
   const socket: WebSocket = await ctx.upgrade();
 
-  const username = ctx.request.url.searchParams.get("username") as string;
-  const tableID = Number(ctx.params.tableID) as number;
+  // const username = ctx.request.url.searchParams.get("username") as string;
+  // const tableID = Number(ctx.params.tableID) as number;
 
   const currentTable = serverTables.get(tableID);
   socket.onopen = async (ctx) => {
@@ -48,6 +53,7 @@ export const handleJoinTable = async (ctx) => {
       username,
       socket,
       bets: { preflop: 0, flop: 0, turn: 0, river: 0 },
+      chips: buyInAmount,
     };
 
     if (!currentPlayers.find((player) => player.username === username)) {
@@ -63,10 +69,10 @@ export const handleJoinTable = async (ctx) => {
       prompt: username + " joined table " + tableID,
     }, tableID);
 
-    send(socket, {
-      event: "table-joined",
-      buyInRange: currentTable.buyInRange,
-    });
+    // send(socket, {
+    //   event: "table-joined",
+    //   buyInRange: currentTable.buyInRange,
+    // });
 
     const interval = setInterval(() => {
       // TODO: maybe consider disconnected players.

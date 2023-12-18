@@ -11,7 +11,9 @@ const [prompts, setPrompts] = createSignal([]);
 const [table, setTable] = createSignal<Table>();
 const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
-const [redirectionPath, setRedirectionPath] = createSignal("");
+const [redirectionData, setRedirectionData] = createSignal<
+  { tableID?: number; username?: string; buyInAmount?: number }
+>({});
 
 const joinSimilarTable = () => {
   const usernameElement = document.getElementById(
@@ -36,7 +38,7 @@ const joinSimilarTable = () => {
   fetch(request).then((response) => {
     console.log("message", response);
     response.json().then((data) => {
-      setRedirectionPath(data);
+      setRedirectionData(data);
     });
   });
 };
@@ -117,8 +119,15 @@ export const Lobby: Component = () => {
   });
 
   createEffect(() => {
-    if (redirectionPath()) {
-      navigate(redirectionPath());
+    if (redirectionData().tableID) {
+      const data = redirectionData();
+      setRedirectionData({});
+      console.log("redirectionData", data);
+      localStorage.setItem("username", data.username);
+      localStorage.setItem("tableID", data.tableID.toString());
+      localStorage.setItem("buyInAmount", data.buyInAmount.toString());
+
+      navigate(`/tables/${data.tableID}`);
     }
   });
   return (
