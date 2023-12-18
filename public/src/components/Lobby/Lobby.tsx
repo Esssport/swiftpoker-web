@@ -1,15 +1,17 @@
-import { Component, createSignal, For, onMount } from "solid-js";
+import { Component, createEffect, createSignal, For, onMount } from "solid-js";
 import { GameState, Player, Table } from "../../../../data_types.ts";
+import { useNavigate } from "@solidjs/router";
+
 let userSocket: WebSocket;
 let userID: string;
 let currenBet: number;
-
 const [players, setPlayers] = createSignal<Player[]>([]);
 const [gameState, setGameState] = createSignal<GameState>();
 const [prompts, setPrompts] = createSignal([]);
 const [table, setTable] = createSignal<Table>();
 const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
+const [redirectionPath, setRedirectionPath] = createSignal("");
 
 const joinSimilarTable = () => {
   const usernameElement = document.getElementById(
@@ -34,7 +36,7 @@ const joinSimilarTable = () => {
   fetch(request).then((response) => {
     console.log("message", response);
     response.json().then((data) => {
-      // setTableData(data);
+      setRedirectionPath(data);
     });
   });
 };
@@ -107,12 +109,17 @@ const joinTable = () => {
   };
 };
 
-// createEffect(() => {
-//   getTableData();
-// });
 export const Lobby: Component = () => {
+  const navigate = useNavigate();
+
   onMount(() => {
     createTable();
+  });
+
+  createEffect(() => {
+    if (redirectionPath()) {
+      navigate(redirectionPath());
+    }
   });
   return (
     <>
@@ -231,18 +238,10 @@ const takeAction = (action: string) => () => {
   );
   console.log("action taken", action);
 };
-// function getTableData(tableID = 1) {
-//   fetch(`http://localhost:8080/tables/${tableID}`)
-//     .then((response) => {
-//       response.json().then((data) => {
-//         // setTableData(data);
-//       });
-//     })
-//     .catch((err) => console.log(err));
-// }
+
 const createTable = () => {
   const request = new Request(
-    `http://localhost:8080/tables/create?limit=10`,
+    `http://localhost:8080/tables/create`,
     {
       method: "GET",
     },

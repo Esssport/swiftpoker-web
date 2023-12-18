@@ -22,6 +22,7 @@ const nanoAddress = env["NANO_ADDRESS"];
 
 // TODO: pay in nano
 // TODO: ask for payment in nano
+//TODO: maybe create tables when server starts, not when a user visits lobby
 export const handleCreateTables = async (
   ctx,
 ) => {
@@ -39,7 +40,7 @@ export const handleCreateTables = async (
 
   if (serverTables.size > 0) {
     //condition above should be if players are equal to max players
-    return;
+    return ctx.response.body = JSON.stringify(Array.from(serverTables));
   }
 
   const playmoneyTableSettings = [

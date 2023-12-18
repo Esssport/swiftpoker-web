@@ -1,5 +1,5 @@
 import { Table as TableType } from "../data_types.ts";
-import { Table, TableConfig } from "../utils/tableBlueprint.ts";
+import { Player, Table, TableConfig } from "../utils/tableBlueprint.ts";
 
 export const handleTableSelection = async (ctx) => {
   const serverTables = ctx.state.tables as Map<number, TableType>;
@@ -25,14 +25,22 @@ export const handleTableSelection = async (ctx) => {
   const newTable = new Table(potentialTable);
 
   // const socket = await ctx.upgrade();
-  newTable.addPlayer({
-    username: requestParams.username,
-    socket: undefined, // attemp to add socket when the game starts
-    chips: requestParams.buyInAmount,
-    //maybe redirect players to table number and send WS request as soon as
-    //they join
-    bets: { preflop: 0, flop: 0, turn: 0, river: 0 },
-  });
+  const player = new Player(
+    {
+      username: requestParams.username,
+      socket: undefined, // attemp to add socket when the game starts
+      chips: requestParams.buyInAmount,
+      //maybe redirect players to table number and send WS request as soon as they join
+    },
+  );
+  // newTable.addPlayer({
+  //   username: requestParams.username,
+  //   socket: undefined, // attemp to add socket when the game starts
+  //   chips: requestParams.buyInAmount,
+  //   //maybe redirect players to table number and send WS request as soon as
+  //   //they join
+  //   bets: { preflop: 0, flop: 0, turn: 0, river: 0 },
+  // });
 
   //call class method and add the user to the table if all is good
   //potentially move table generation ligic to the class to as a method
@@ -50,5 +58,8 @@ export const handleTableSelection = async (ctx) => {
   // console.log("potentialTable", potentialTable);
 
   // console.log("lastSimilarTable", lastSimilarTable);
-  ctx.response.body = Array.from(serverTables);
+  // ctx.response.body = Array.from(serverTables);
+  ctx.response.body = JSON.stringify(
+    `/tables/${newTable.id}?username=${requestParams.username}&buyInAmount=${requestParams.buyInAmount}`,
+  );
 };

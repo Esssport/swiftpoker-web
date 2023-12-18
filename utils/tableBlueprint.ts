@@ -1,4 +1,3 @@
-import { Player } from "../data_types.ts";
 export interface TableConfig {
   blinds: { small: number; big: number };
   buyInRange: { min: number; max: number };
@@ -8,6 +7,25 @@ export interface TableConfig {
   variantID?: number;
   username?: string;
   buyInAmount?: number;
+}
+
+interface playerInterface {
+  username: string;
+  socket?: WebSocket;
+  chips: number;
+}
+export class Player {
+  username: string;
+  socket: WebSocket;
+  chips: number;
+  bets: { preflop: number; flop: number; turn: number; river: number };
+
+  constructor(player: playerInterface) {
+    this.username = player.username;
+    this.socket = player.socket;
+    this.chips = player.chips;
+    this.bets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+  }
 }
 
 export class Table {
@@ -20,11 +38,11 @@ export class Table {
   type: string;
   id: number;
   players = [];
-  waitingList: [];
-  sitOutPlayers: [];
+  waitingList = [];
+  sitOutPlayers = [];
   variantID: number;
-  firstBets: { preflop: 0; flop: 0; turn: 0; river: 0 };
-  pot: 0;
+  firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+  pot = 0;
   GameState: {
     activePosition: 0;
     stage: "preflop";
@@ -43,11 +61,21 @@ export class Table {
     this.minPlayers = config.minPlayers || 2;
     this.type = config.type || "playmoney";
     this.id = Table.count++;
+    // this.GameState = {};
+    Table.allTables.set(this.id, this);
     this.variantID = config.variantID;
     this.players = [];
+    this.waitingList = [];
+    this.sitOutPlayers = [];
+    this.firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+    this.pot = 0;
   }
   public addPlayer(player: Player) {
     this.players.push(player);
+  }
+
+  public addToWaitingList(player: Player) {
+    this.waitingList.push(player);
   }
 
   public startGame() {
