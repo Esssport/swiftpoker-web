@@ -111,6 +111,7 @@ export const Table: Component = () => {
 
   onMount(() => {
     getTableData(tableID);
+    //run joinTable if redirected from lobby, otherwise join if user clicks on join button
     joinTable();
   });
 

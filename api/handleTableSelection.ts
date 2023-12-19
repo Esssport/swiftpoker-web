@@ -59,6 +59,7 @@ export const handleTableSelection = async (ctx) => {
 
   // console.log("lastSimilarTable", lastSimilarTable);
   ctx.response.body = JSON.stringify({
+    path: "/tables",
     tableID: newTable.id,
     username: requestParams.username,
     buyInAmount: requestParams.buyInAmount,

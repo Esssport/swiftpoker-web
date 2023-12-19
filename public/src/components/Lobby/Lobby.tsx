@@ -12,7 +12,7 @@ const [table, setTable] = createSignal<Table>();
 const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
 const [redirectionData, setRedirectionData] = createSignal<
-  { tableID?: number; username?: string; buyInAmount?: number }
+  { path?: string; tableID?: number; username?: string; buyInAmount?: number }
 >({});
 
 const joinSimilarTable = () => {
@@ -43,74 +43,6 @@ const joinSimilarTable = () => {
   });
 };
 
-const joinTable = () => {
-  const usernameElement = document.getElementById(
-    "username",
-  ) as HTMLInputElement;
-  const username = usernameElement.value;
-  const tableID = document.getElementById("tableID") as HTMLInputElement;
-  userID = username;
-  //TODO: Add Try catch block
-  const serverSocket = new WebSocket(
-    `ws://localhost:8080/tables/join/${tableID.value}?username=${username}`,
-  );
-  userSocket = serverSocket;
-  serverSocket.onerror = (e) => {
-    console.log("ERROR", e);
-  };
-  serverSocket.onclose = (e) => {
-    console.log(username, e.reason);
-  };
-  serverSocket.onopen = (ws) => {
-    serverSocket.send(JSON.stringify("connected to table " + tableID.value));
-  };
-  // getTableData();
-  serverSocket.onmessage = (m) => {
-    const data = JSON.parse(m.data);
-    if (!!data?.payload?.prompt) {
-      setPrompts(data.payload.prompt);
-    }
-    if (data.payload?.table) setPlayers(data.payload.table.players);
-    console.log("data", data);
-    switch (data.event) {
-      case "table-joined":
-        const buyInRange = data.buyInRange;
-        //Prompt user to buy in within the range of the table
-        const amount = Number(prompt(
-          `Buy in between ${buyInRange.min} and ${buyInRange.max}`,
-        ));
-        const finalAmount = amount <= buyInRange.max && amount >= buyInRange.min
-          ? amount
-          : buyInRange.min;
-
-        //TODO: pass in action
-        serverSocket.send(
-          JSON.stringify({ event: "buy-in", payload: finalAmount }),
-        );
-        break;
-      case "table-updated":
-        setPlayers(data.payload.table.players);
-        setTable(data.payload.table);
-        setGameState(data.payload.gameState);
-        setActiveUser(data.payload.waitingFor);
-        //TODO: interact with input field for bet amount, set limitations and default to big blind
-        if (activeUser() !== userID) setActions([]);
-        //setSecondaryActions([]);
-        if (data.actions) {
-          setActions(data.actions);
-          // const betAmount = Number(prompt(
-          //   `bet between ${table.blinds.big} and ${data.payload.chips}`,
-          // ));
-        }
-
-        if (data.secondaryAction) {
-          //TODO
-        }
-        break;
-    }
-  };
-};
-
 export const Lobby: Component = () => {
   const navigate = useNavigate();
 
@@ -127,7 +59,7 @@ export const Lobby: Component = () => {
       localStorage.setItem("tableID", data.tableID.toString());
       localStorage.setItem("buyInAmount", data.buyInAmount.toString());
 
-      navigate(`/tables/${data.tableID}`);
+      navigate(`${data.path}/${data.tableID}`);
     }
   });
   return (
@@ -173,7 +105,6 @@ export const Lobby: Component = () => {
       <button
         class="bg-blue hover:bg-gray-100 text-gray-200 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
         onClick={joinSimilarTable}
-        // onClick={joinTable}
       >
         Join Table
       </button>
