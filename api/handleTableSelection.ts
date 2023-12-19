@@ -1,13 +1,12 @@
-import { Table as TableType } from "../data_types.ts";
 import { Player, Table, TableConfig } from "../utils/tableBlueprint.ts";
 
 export const handleTableSelection = async (ctx) => {
-  const serverTables = ctx.state.tables as Map<number, TableType>;
+  const serverTables = ctx.state.tables as Map<number, Table>;
   const requestParams = JSON.parse(
     await (ctx.request.body()).value,
   ) as TableConfig;
   //validate all values from requestParams
-  // console.log("requestParams", requestParams);
+
   const tablesArray = [...serverTables];
   const lastSimilarTable = tablesArray.findLast((tableArray) => {
     const table = tableArray[1];
@@ -22,45 +21,18 @@ export const handleTableSelection = async (ctx) => {
   });
 
   const potentialTable = serverTables.get(lastSimilarTable[0]);
-  const newTable = new Table(potentialTable);
-
-  // const socket = await ctx.upgrade();
-  const player = new Player(
-    {
-      username: requestParams.username,
-      socket: undefined, // attemp to add socket when the game starts
-      chips: requestParams.buyInAmount,
-      //maybe redirect players to table number and send WS request as soon as they join
-    },
-  );
-  // newTable.addPlayer({
-  //   username: requestParams.username,
-  //   socket: undefined, // attemp to add socket when the game starts
-  //   chips: requestParams.buyInAmount,
-  //   //maybe redirect players to table number and send WS request as soon as
-  //   //they join
-  //   bets: { preflop: 0, flop: 0, turn: 0, river: 0 },
-  // });
-
-  //call class method and add the user to the table if all is good
-  //potentially move table generation ligic to the class to as a method
-
+  let finalTable: Table;
+  //potentially move table generation logic to the class as a method
   if (potentialTable.players?.length >= potentialTable.maxPlayers) {
-    // buyInAmount: requestParams.buyInAmount,
-    //TODO: make new table and add the user to the new table
+    const newTable = new Table(potentialTable);
+    finalTable = newTable;
   } else {
-    //TODO: add the user to the potential table
+    finalTable = potentialTable;
   }
-
-  // console.log("newTable", newTable);
-  serverTables.set(newTable.id, newTable);
-
-  // console.log("potentialTable", potentialTable);
-
-  // console.log("lastSimilarTable", lastSimilarTable);
+  serverTables.set(finalTable.id, finalTable);
   ctx.response.body = JSON.stringify({
     path: "/tables",
-    tableID: newTable.id,
+    tableID: finalTable.id,
     username: requestParams.username,
     buyInAmount: requestParams.buyInAmount,
   });

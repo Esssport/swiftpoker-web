@@ -1,6 +1,6 @@
 export const sockets = new Map<string, WebSocket>();
 export const tableIDs = new Map();
-import { Player, Table } from "../data_types.ts";
+import { Player, Table } from "../utils/tableBlueprint.ts";
 import { startGame } from "../utils/Dealer.ts";
 import { send } from "./broadcast.ts";
 import { broadcast } from "./broadcast.ts";
@@ -47,7 +47,7 @@ export const handleJoinTable = async (ctx) => {
 
     sockets.set(username, socket);
     tableIDs.set(username, tableID);
-    const currentPlayers = serverTables.get(tableID).players;
+    const currentPlayers = currentTable.players;
 
     const playerObj: Player = {
       username,
@@ -57,8 +57,9 @@ export const handleJoinTable = async (ctx) => {
     };
 
     if (!currentPlayers.find((player) => player.username === username)) {
-      currentPlayers.push(playerObj);
+      currentTable.addPlayer(playerObj);
     }
+    console.log("serverTable", serverTables);
 
     broadcast({
       event: "table-updated",
@@ -74,15 +75,15 @@ export const handleJoinTable = async (ctx) => {
     //   buyInRange: currentTable.buyInRange,
     // });
 
-    const interval = setInterval(() => {
-      // TODO: maybe consider disconnected players.
-      const table = serverTables.get(tableID);
-      if (currentPlayers.length >= 2) {
-        clearInterval(interval);
-        console.log("cleared interval");
-        startGame(username, tableID, currentTable);
-      }
-    }, 5000);
+    // const interval = setInterval(() => {
+    //   // TODO: maybe consider disconnected players.
+    //   const table = serverTables.get(tableID);
+    //   if (currentPlayers.length >= 2) {
+    //     clearInterval(interval);
+    //     console.log("cleared interval");
+    //     startGame(username, tableID, currentTable);
+    //   }
+    // }, 5000);
   };
 
   socket.onmessage = async (m) => {
