@@ -1,9 +1,13 @@
-import { Component, createSignal, onCleanup, onMount } from "solid-js";
+import { Component, createSignal, For, onCleanup, onMount } from "solid-js";
 import { useParams } from "@solidjs/router";
-import { Table as TableType } from "../../../../data_types.ts";
+import {
+  Player as PlayerType,
+  Table as TableType,
+} from "../../../../data_types.ts";
 import "./Table.scss";
 
 const [table, setTable] = createSignal<TableType>();
+const [players, setPlayers] = createSignal<PlayerType[]>([]);
 let interval = null;
 const getTableData = (tableID) => {
   const request = new Request(
@@ -13,9 +17,9 @@ const getTableData = (tableID) => {
     },
   );
   fetchTableData(request);
-  // interval = setInterval(() => {
-  //   fetchTableData(request);
-  // }, 5000);
+  interval = setInterval(() => {
+    fetchTableData(request);
+  }, 5000);
 };
 
 const joinTable = () => {
@@ -48,26 +52,10 @@ const joinTable = () => {
       // setPrompts(data.payload.prompt);
     }
     // if (data.payload?.table) setPlayers(data.payload.table.players);
-    console.log("data", data);
     switch (data.event) {
-      // case "table-joined":
-      //   const buyInRange = data.buyInRange;
-      //   //Prompt user to buy in within the range of the table
-      //   const amount = Number(prompt(
-      //     `Buy in between ${buyInRange.min} and ${buyInRange.max}`,
-      //   ));
-      //   const finalAmount = amount <= buyInRange.max && amount >= buyInRange.min
-      //     ? amount
-      //     : buyInRange.min;
-
-      //   //TODO: pass in action
-      //   serverSocket.send(
-      //     JSON.stringify({ event: "buy-in", payload: finalAmount }),
-      //   );
-      //   break;
       case "table-updated":
-        // setPlayers(data.payload.table.players);
-        // setTable(data.payload.table);
+        setTable(data.payload.table);
+        console.log("data", data);
         // setGameState(data.payload.gameState);
         // setActiveUser(data.payload.waitingFor);
         // //TODO: interact with input field for bet amount, set limitations and default to big blind
@@ -120,30 +108,30 @@ export const Table: Component = () => {
   });
   return (
     <section class="table">
-      <Player />
+      {JSON.stringify(table()?.players)}
+      <For each={table()?.players}>
+        {(player) => <Player player={player} />}
+      </For>
 
-      <Player />
-      <Player />
-      <Player />
-      <Player />
-      <Player />
-
+      {}
       <div>Table ID: {table()?.id}</div>
     </section>
   );
 };
 
-const Player = () => {
+const Player = ({ player }) => {
   return (
     <div class="player">
       {true
         ? (
-          <button class="player-image-section">
-            sit here
-          </button>
+          <div class="player-image-section">
+            <div class="player-name">{player.username}</div>
+            <div class="player-hand">{player.hand}</div>
+            <div class="player-chips">{player.chips}</div>
+          </div>
         )
         : (
-          <div>
+          <div class="player-image-section">
             <div class="player__name"></div>
             <div class="player__hand"></div>
             <div class="player__chips"></div>

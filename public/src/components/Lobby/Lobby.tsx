@@ -5,7 +5,6 @@ import { useNavigate } from "@solidjs/router";
 let userSocket: WebSocket;
 let userID: string;
 let currenBet: number;
-const [players, setPlayers] = createSignal<Player[]>([]);
 const [gameState, setGameState] = createSignal<GameState>();
 const [prompts, setPrompts] = createSignal([]);
 const [table, setTable] = createSignal<Table>();
@@ -124,7 +123,8 @@ export const Lobby: Component = () => {
           Players
         </h1>
         <ul class="player-list">
-          <For each={players()} fallback={<p>Loading players...</p>}>
+          {
+            /* <For each={players()} fallback={<p>Loading players...</p>}>
             {(player) => (
               <li
                 classList={{
@@ -144,7 +144,8 @@ export const Lobby: Component = () => {
                 <br /> cards: {JSON.stringify(player.hand)}
               </li>
             )}
-          </For>
+          </For> */
+          }
         </ul>
       </section>
       <section class="md:container md:mx-auto" style="padding-bottom: 25px;">

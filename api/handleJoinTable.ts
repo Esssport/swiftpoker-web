@@ -23,6 +23,7 @@ export const handleJoinTable = async (ctx) => {
   // const username = ctx.request.url.searchParams.get("username") as string;
   // const tableID = Number(ctx.params.tableID) as number;
 
+  //TODO: Refactor the error handling and input params to happen before socket is opened
   const currentTable = serverTables.get(tableID);
   socket.onopen = async (ctx) => {
     if (!tableID || !currentTable) {
@@ -64,7 +65,6 @@ export const handleJoinTable = async (ctx) => {
     broadcast({
       event: "table-updated",
       payload: {
-        tables: Array.from(serverTables),
         table: currentTable,
       },
       prompt: username + " joined table " + tableID,
@@ -84,29 +84,6 @@ export const handleJoinTable = async (ctx) => {
     //     startGame(username, tableID, currentTable);
     //   }
     // }, 5000);
-  };
-
-  socket.onmessage = async (m) => {
-    const data = JSON.parse(m.data);
-    const currentPlayers = serverTables.get(tableID).players;
-    const currentPlayer = currentPlayers.find((p) => p.username === username);
-    switch (data.event) {
-      case "buy-in":
-        currentPlayer.chips = data.payload;
-        currentPlayer.buyIn = data.payload;
-
-        broadcast({
-          event: "table-updated",
-          payload: {
-            table: currentTable,
-          },
-          prompt: username + " bought in!",
-        }, tableID);
-        break;
-    }
-
-    //TODO: check the username is not taken and is not empty (only on login, not on join table)
-    console.log("client message:", data);
   };
 
   socket.onclose = async () => {
