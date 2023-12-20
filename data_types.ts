@@ -1,26 +1,27 @@
-export interface Player {
-  isDealer?: boolean;
-  hasChecked?: boolean;
-  hand?: Card[];
-  yourTurn?: boolean;
-  id?: number;
-  role?: string;
-  socket?: WebSocket;
-  buyIn?: number;
-  chips?: number;
-  folded?: boolean;
-  allIn?: boolean;
-  disconnected?: boolean;
-  bets?: { preflop?: number; flop?: number; turn?: number; river?: number };
-  username?: string;
-  wallet?: string;
-  position?: number;
-  tablesRegistered?: number[];
-  handHistory?: Card[];
-  totalWinnings?: number;
-  totalHandsWon?: number;
-  balance?: number;
-}
+import { Player, Table } from "./utils/tableBlueprint.ts";
+// export interface Player {
+//   isDealer?: boolean;
+//   hasChecked?: boolean;
+//   hand?: Card[];
+//   yourTurn?: boolean;
+//   id?: number;
+//   role?: string;
+//   socket?: WebSocket;
+//   buyIn?: number;
+//   chips?: number;
+//   folded?: boolean;
+//   allIn?: boolean;
+//   disconnected?: boolean;
+//   bets?: { preflop?: number; flop?: number; turn?: number; river?: number };
+//   username?: string;
+//   wallet?: string;
+//   position?: number;
+//   tablesRegistered?: number[];
+//   handHistory?: Card[];
+//   totalWinnings?: number;
+//   totalHandsWon?: number;
+//   balance?: number;
+// }
 
 export interface GameState {
   nextRound?: boolean;
@@ -48,30 +49,30 @@ export interface Tournament {
   speed?: "Normal" | "Fast" | "Hyper";
 }
 
-export interface Table {
-  winners?: Result[];
-  type: string;
-  id?: number;
-  name?: string;
-  startedAt?: string;
-  maxPlayers: number;
-  minPlayers?: number;
-  waitingList?: Player[];
-  sitOutPlayers?: Player[];
-  players?: Player[];
-  communityCards?: Card[];
-  currentRound?: number;
-  handHistory?: Card[];
-  lateRegistration?: true;
-  running?: false;
-  pot?: number;
-  blinds: { small: number; big: number };
-  firstBets?: { preflop: number; flop: number; turn: number; river: number };
-  buyInRange: { min: number; max: number };
-  GameState?: GameState;
-}
+// export interface Table {
+//   winners?: Result[];
+//   type: string;
+//   id?: number;
+//   name?: string;
+//   startedAt?: string;
+//   maxPlayers: number;
+//   minPlayers?: number;
+//   waitingList?: Player[];
+//   sitOutPlayers?: Player[];
+//   players?: Player[];
+//   communityCards?: Card[];
+//   currentRound?: number;
+//   handHistory?: Card[];
+//   lateRegistration?: true;
+//   running?: false;
+//   pot?: number;
+//   blinds: { small: number; big: number };
+//   firstBets?: { preflop: number; flop: number; turn: number; river: number };
+//   buyInRange: { min: number; max: number };
+//   GameState?: GameState;
+// }
 
-export type Result = {
+export interface Result {
   username?: string;
   handName?: string;
   score?: number;
@@ -82,7 +83,7 @@ export type Result = {
   secondPair?: Card[];
   suit?: string;
   highCards?: Card[];
-};
+}
 export type Card = [string, {
   suit: string;
   value: number;

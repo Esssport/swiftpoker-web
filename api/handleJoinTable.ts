@@ -1,7 +1,6 @@
 export const sockets = new Map<string, WebSocket>();
 export const tableIDs = new Map();
-import { Player, Table } from "../utils/tableBlueprint.ts";
-import { startGame } from "../utils/Dealer.ts";
+import { Player, PlayerInterface, Table } from "../utils/tableBlueprint.ts";
 import { send } from "./broadcast.ts";
 import { broadcast } from "./broadcast.ts";
 
@@ -50,15 +49,15 @@ export const handleJoinTable = async (ctx) => {
     tableIDs.set(username, tableID);
     const currentPlayers = currentTable.players;
 
-    const playerObj: Player = {
+    const playerObj: PlayerInterface = {
       username,
       socket,
-      bets: { preflop: 0, flop: 0, turn: 0, river: 0 },
       chips: buyInAmount,
     };
+    const newPlayer = new Player(playerObj);
 
     if (!currentPlayers.find((player) => player.username === username)) {
-      currentTable.addPlayer(playerObj);
+      currentTable.addPlayer(newPlayer);
     }
     console.log("serverTable", serverTables);
 
@@ -70,19 +69,12 @@ export const handleJoinTable = async (ctx) => {
       prompt: username + " joined table " + tableID,
     }, tableID);
 
-    // send(socket, {
-    //   event: "table-joined",
-    //   buyInRange: currentTable.buyInRange,
-    // });
-
     // const interval = setInterval(() => {
     //   // TODO: maybe consider disconnected players.
     //   const table = serverTables.get(tableID);
-    //   if (currentPlayers.length >= 2) {
-    //     clearInterval(interval);
-    //     console.log("cleared interval");
-    //     startGame(username, tableID, currentTable);
-    //   }
+    if (currentPlayers.length >= currentTable.minPlayers) {
+      currentTable.startGame();
+    }
     // }, 5000);
   };
 

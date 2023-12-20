@@ -1,13 +1,14 @@
 import { broadcast } from "../api/broadcast.ts";
-import { GameState, Table } from "../data_types.ts";
+import { Table } from "../utils/tableBlueprint.ts";
 import { determineHandValues } from "./determineHandValues.ts";
 import { determineWinners } from "./determineWinners.ts";
 import { next } from "./next.ts";
 
-export const handleWinnings = (table: Table, state: GameState) => {
+export const handleWinnings = (table: Table) => {
+  const state = table.gameState;
   const players = table.players;
   //TODO: call this determineHandValues after every stage to let users know their hand value
-  const results = determineHandValues(table, state);
+  const results = determineHandValues(table);
   let winners = determineWinners(results);
 
   //handle cases where everybody folds
@@ -29,7 +30,7 @@ export const handleWinnings = (table: Table, state: GameState) => {
       });
     }
   }
-  table.winners = winners;
+  state.winners = winners;
   //TODO: handle case where there is a tie or somebody folds
   const winnerPrompt = `${winners[0].username} won ${table.pot} chips with ${
     winners[0].handName

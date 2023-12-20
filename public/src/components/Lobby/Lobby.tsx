@@ -1,5 +1,5 @@
 import { Component, createEffect, createSignal, For, onMount } from "solid-js";
-import { GameState, Player, Table } from "../../../../data_types.ts";
+import { GameState, Player, Table } from "../../../../utils/tableBlueprint.ts";
 import { useNavigate } from "@solidjs/router";
 
 let userSocket: WebSocket;
@@ -112,7 +112,7 @@ export const Lobby: Component = () => {
           Community cards
         </h1>
         <For
-          each={table()?.communityCards}
+          each={table()?.gameState.hands.flop}
           fallback={<p>cards are not dealt yet</p>}
         >
           {(card) => <p>{JSON.stringify(card)}</p>}

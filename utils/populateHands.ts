@@ -1,4 +1,4 @@
-import { Player, Table } from "../data_types.ts";
+import { Player, Table } from "./tableBlueprint.ts";
 import { dealCards } from "./dealCards.ts";
 
 export const populateHands = (
@@ -6,7 +6,7 @@ export const populateHands = (
   stage: string = null,
 ) => {
   const players = table.players;
-  let gameState = table.GameState;
+  let gameState = table.gameState;
   let tableHands = gameState.hands;
   // also run if the game has ended, for next round
   if (!tableHands || gameState.newGame) {
@@ -14,7 +14,11 @@ export const populateHands = (
     gameState.hands = results;
   }
   const currentCards = gameState.hands;
-  const handsCopy = [...currentCards.hands];
+  const handsCopy = [
+    ...currentCards.flop,
+    currentCards.turn,
+    currentCards.river,
+  ];
   return players.forEach((player: Player) => {
     if (!!stage) {
       player[stage] = currentCards[stage];

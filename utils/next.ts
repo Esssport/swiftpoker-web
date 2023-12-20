@@ -1,4 +1,4 @@
-import { Table } from "../data_types.ts";
+import { Table } from "./tableBlueprint.ts";
 import { determinePositions } from "./determinePositions.ts";
 import { handleWinnings } from "./handleWinnings.ts";
 import { populateHands } from "./populateHands.ts";
@@ -10,7 +10,7 @@ export let nextCounter = 0;
 
 export const next = (table: Table) => {
   nextCounter += 1;
-  const gameState = table.GameState;
+  const gameState = table.gameState;
   // console.log("NEXT", nextCounter, "position", gameState.activePosition);
   const players = table.players;
   const stage = gameState.stage;
@@ -18,7 +18,7 @@ export const next = (table: Table) => {
 
   let remainingPlayers = players.filter((p) => !p.folded);
   if (remainingPlayers.length === 1) {
-    handleWinnings(table, gameState);
+    handleWinnings(table);
   }
   console.log(
     "NEXT",
@@ -52,15 +52,15 @@ export const next = (table: Table) => {
     switch (stage) {
       case "preflop":
         gameState.stage = "flop";
-        table.communityCards = gameState.hands.flop;
+        // table.communityCards = gameState.hands.flop;
         break;
       case "flop":
         gameState.stage = "turn";
-        table.communityCards.push(gameState.hands.turn);
+        // table.communityCards.push(gameState.hands.turn);
         break;
       case "turn":
         gameState.stage = "river";
-        table.communityCards.push(gameState.hands.river);
+        // table.communityCards.push(gameState.hands.river);
         break;
       case "river":
         gameState.stage = "showdown";
@@ -70,7 +70,7 @@ export const next = (table: Table) => {
     }
 
     if (gameState.stage === "showdown") {
-      handleWinnings(table, gameState);
+      handleWinnings(table);
       return;
     }
 
@@ -89,7 +89,7 @@ export const next = (table: Table) => {
   }
 
   if (gameState.newGame) {
-    determinePositions(players, gameState);
+    determinePositions(table);
     populateHands(table);
 
     // players.forEach((p) => {

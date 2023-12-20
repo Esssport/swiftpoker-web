@@ -1,6 +1,8 @@
-import { GameState, Player } from "../data_types.ts";
+import { Player, Table } from "./tableBlueprint.ts";
 
-export const determinePositions = (players: Player[], state: GameState) => {
+export const determinePositions = (table: Table) => {
+  const players = table.players;
+  const state = table.gameState;
   players.forEach((player, i) => {
     //maybe add seat attribute to player
     if (player.position !== undefined) {

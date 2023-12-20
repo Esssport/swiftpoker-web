@@ -1,5 +1,5 @@
 import { send } from "../api/broadcast.ts";
-import { Table } from "../data_types.ts";
+import { Table } from "../utils/tableBlueprint.ts";
 
 export const askTOBet = (
   table: Table,
@@ -8,7 +8,7 @@ export const askTOBet = (
 ) => {
   const players = table.players;
   const player = players.find((p) => p.username === username);
-  const gameState = table.GameState;
+  const gameState = table.gameState;
   const stage = gameState.stage;
   let actions = [];
   if (table.firstBets[stage] === 0) {

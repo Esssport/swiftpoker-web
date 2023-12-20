@@ -1,4 +1,4 @@
-import { Table } from "../data_types.ts";
+import { Table } from "../utils/tableBlueprint.ts";
 
 export const handleTable = async (ctx) => {
   const id = +ctx.params.tableID as number;

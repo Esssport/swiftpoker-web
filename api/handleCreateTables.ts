@@ -1,4 +1,3 @@
-import { Table as TableType } from "../data_types.ts";
 import { monitorAddress } from "./nanoMonitor.ts";
 import { nanoBalance, nanoHash } from "./nanoHandler.ts";
 import { Table } from "../utils/tableBlueprint.ts";
@@ -28,7 +27,7 @@ export const handleCreateTables = async (
 ) => {
   const serverTables = ctx.state.tables as Map<
     number,
-    TableType
+    Table
   >;
 
   const playMoneyToNano = (playmoney: number) => {

@@ -3,7 +3,7 @@ import { useParams } from "@solidjs/router";
 import {
   Player as PlayerType,
   Table as TableType,
-} from "../../../../data_types.ts";
+} from "../../../../utils/tableBlueprint.ts";
 import "./Table.scss";
 
 const [table, setTable] = createSignal<TableType>();

@@ -1,14 +1,21 @@
-import { Card, Result, Table } from "../data_types.ts";
+import { Card, Result } from "../data_types.ts";
+import { Table } from "./tableBlueprint.ts";
 
-export const determineHandValues = (table: Table, state): any[] => {
-  const results: Result[] = [];
+export const determineHandValues = (table: Table): Result[] => {
+  const state = table.gameState;
+  const results = state.results;
   const playerCards = table.players
     .filter((player) => {
       return !player.folded;
     })
     .map((player) => {
       results.push({ username: player.username });
-      return [...player.hand, ...state.hands.communityCards];
+      return [
+        ...player.hand,
+        ...state.hands.flop,
+        state.hands.turn,
+        state.hands.river,
+      ];
     });
 
   playerCards.forEach((hand: Card[], i: number) => {
