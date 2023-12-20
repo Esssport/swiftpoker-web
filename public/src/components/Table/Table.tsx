@@ -9,18 +9,18 @@ import "./Table.scss";
 const [table, setTable] = createSignal<TableType>();
 const [players, setPlayers] = createSignal<PlayerType[]>([]);
 let interval = null;
-const getTableData = (tableID) => {
-  const request = new Request(
-    `http://localhost:8080/tables/${tableID}`,
-    {
-      method: "GET",
-    },
-  );
-  fetchTableData(request);
-  interval = setInterval(() => {
-    fetchTableData(request);
-  }, 5000);
-};
+// const getTableData = (tableID) => {
+//   const request = new Request(
+//     `http://localhost:8080/tables/${tableID}`,
+//     {
+//       method: "GET",
+//     },
+//   );
+//   fetchTableData(request);
+//   interval = setInterval(() => {
+//     fetchTableData(request);
+//   }, 5000);
+// };
 
 const joinTable = () => {
   const username = localStorage.getItem("username");
@@ -76,20 +76,20 @@ const joinTable = () => {
   };
 };
 
-const fetchTableData = async (request) => {
-  fetch(request).then((response) => {
-    if (response.status !== 200) {
-      console.log("Table not found");
-      clearInterval(interval);
-      return;
-    }
-    response.json().then((data) => {
-      console.log("message", data);
-      setTable(data);
-    }).catch((err) => console.log(err));
-  })
-    .catch((err) => console.log(err));
-};
+// const fetchTableData = async (request) => {
+//   fetch(request).then((response) => {
+//     if (response.status !== 200) {
+//       console.log("Table not found");
+//       clearInterval(interval);
+//       return;
+//     }
+//     response.json().then((data) => {
+//       console.log("message", data);
+//       setTable(data);
+//     }).catch((err) => console.log(err));
+//   })
+//     .catch((err) => console.log(err));
+// };
 
 //TODO: get table info
 //TODO: add a For element and loop over all the players and pass them to <Player /> component
@@ -98,7 +98,7 @@ export const Table: Component = () => {
   const tableID = params.tableID;
 
   onMount(() => {
-    getTableData(tableID);
+    // getTableData(tableID);
     //run joinTable if redirected from lobby, otherwise join if user clicks on join button
     joinTable();
   });

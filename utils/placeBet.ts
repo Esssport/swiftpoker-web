@@ -1,6 +1,5 @@
-import { GameState } from "../data_types.ts";
 import { next } from "./next.ts";
-import { Player, Table } from "./tableBlueprint.ts";
+import { GameState, Player, Table } from "./tableBlueprint.ts";
 import { askTOBet } from "./askTOBet.ts";
 
 export const placeBet = (

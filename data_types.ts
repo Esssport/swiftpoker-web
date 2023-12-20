@@ -23,19 +23,18 @@ import { Player, Table } from "./utils/tableBlueprint.ts";
 //   balance?: number;
 // }
 
-export interface GameState {
-  nextRound?: boolean;
-  activePosition: number;
-  //TODO: use to replace waitingFor
-  activePlayer?: Player;
-  stage: string;
-  hands: { hands: Card[]; flop: Card[]; turn: Card; river: Card };
-  newGame: boolean;
-  smallBlindPlayed: boolean;
-  bigBlindPlayed: boolean;
-  promptingFor: string;
-  highestBets: { preflop: number; flop: number; turn: number; river: number };
-}
+// export interface GameState {
+//   nextRound?: boolean;
+//   activePosition: number;
+//   activePlayer?: Player;
+//   stage: string;
+//   hands: { hands: Card[]; flop: Card[]; turn: Card; river: Card };
+//   newGame: boolean;
+//   smallBlindPlayed: boolean;
+//   bigBlindPlayed: boolean;
+//   promptingFor: string;
+//   highestBets: { preflop: number; flop: number; turn: number; river: number };
+// }
 
 export interface Tournament {
   id?: number;

@@ -9,7 +9,7 @@ export const takeAction = (input: BetInput) => {
   const isAllIn = betAmount >= player.chips;
   const bet = isAllIn ? player.chips : betAmount;
 
-  const gameState = table.GameState;
+  const gameState = table.gameState;
   const isBlind = player.role === "smallBlind" || player.role === "bigBlind";
   const isFirstBet = table.firstBets[stage] === 0;
   const isValidRaise = !isFirstBet && bet >= table.firstBets[stage] * 2;

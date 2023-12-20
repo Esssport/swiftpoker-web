@@ -26,6 +26,9 @@ export class Player {
   role: "smallBlind" | "bigBlind";
   bets: { preflop: number; flop: number; turn: number; river: number };
   hand: Card[];
+  folded: boolean;
+  allIn: boolean;
+  hasChecked: boolean;
 
   constructor(player: PlayerInterface) {
     this.username = player.username;
@@ -40,7 +43,7 @@ export class GameState {
   winners: Result[];
   results: Result[];
   activePosition: number;
-  stage: "preflop" | "flop" | "turn" | "river" | "showdown";
+  stage: "preflop" | "flop" | "turn" | "river" | "showdown" = "preflop";
   hands: { flop: Card[]; turn: Card; river: Card };
   newGame: boolean;
   smallBlindPlayed: boolean;
@@ -88,7 +91,6 @@ export class Table {
     this.minPlayers = config.minPlayers || 2;
     this.type = config.type || "playmoney";
     this.id = Table.count++;
-    // this.GameState = {};
     Table.allTables.set(this.id, this);
     this.variantID = config.variantID;
     this.players = [];
