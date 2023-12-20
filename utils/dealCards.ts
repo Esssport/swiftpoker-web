@@ -57,22 +57,20 @@ const deck = [...spadeStack].concat([...heartStack]).concat([...diamondStack])
     ...clubStack,
   ]);
 
-export const dealCards = (tableID, players = 2) => {
-  console.log("DEALING FOR", tableID, players);
-  if (players < 2) {
+export const dealCards = (tableID, playerCount = 2) => {
+  console.log("DEALING FOR", tableID, playerCount);
+  if (playerCount < 2) {
     throw new Error("You need at least 2 players to play");
   }
-  if (players > 10) {
+  if (playerCount > 10) {
     throw new Error("You can't play with more than 10 players");
   }
   const shuffledDeck: Card[] = shuffle(deck);
   const results = {
-    hands: shuffledDeck.slice(0, players * 2),
-    //to be deprecated
-    communityCards: shuffledDeck.slice(players * 2, players * 2 + 5),
-    flop: shuffledDeck.slice(players * 2, players * 2 + 3),
-    turn: shuffledDeck[players * 2 + 3],
-    river: shuffledDeck[players * 2 + 4],
+    hands: shuffledDeck.slice(0, playerCount * 2),
+    flop: shuffledDeck.slice(playerCount * 2, playerCount * 2 + 3),
+    turn: shuffledDeck[playerCount * 2 + 3],
+    river: shuffledDeck[playerCount * 2 + 4],
   };
   return results;
 };

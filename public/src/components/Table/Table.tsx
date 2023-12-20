@@ -7,8 +7,10 @@ import {
 import "./Table.scss";
 
 const [table, setTable] = createSignal<TableType>();
-const [players, setPlayers] = createSignal<PlayerType[]>([]);
-let interval = null;
+const [actions, setActions] = createSignal([]);
+const [activeUser, setActiveUser] = createSignal("");
+let userSocket: WebSocket;
+let userID: string;
 // const getTableData = (tableID) => {
 //   const request = new Request(
 //     `http://localhost:8080/tables/${tableID}`,
@@ -21,6 +23,23 @@ let interval = null;
 //     fetchTableData(request);
 //   }, 5000);
 // };
+
+const takeAction = (action: string) => () => {
+  const betAmount = document.getElementById(
+    "betAmount",
+  ) as HTMLInputElement;
+  const finalBetAmount = !!betAmount.value
+    ? +betAmount.value
+    : table().blinds.big;
+  userSocket.send(
+    //TODO: include userID in payload potentially
+    JSON.stringify({
+      event: "action-taken",
+      payload: { betAmount: finalBetAmount, userID, action },
+    }),
+  );
+  console.log("action taken", action);
+};
 
 const joinTable = () => {
   const username = localStorage.getItem("username");
@@ -35,7 +54,7 @@ const joinTable = () => {
   const serverSocket = new WebSocket(
     `ws://localhost:8080/tables/join/${tableID}?username=${username}&buyInAmount=${buyInAmount}`,
   );
-  // userSocket = serverSocket;
+  userSocket = serverSocket;
   serverSocket.onerror = (e) => {
     console.log("ERROR", e);
   };
@@ -57,16 +76,17 @@ const joinTable = () => {
         setTable(data.payload.table);
         console.log("data", data);
         // setGameState(data.payload.gameState);
-        // setActiveUser(data.payload.waitingFor);
+        setActiveUser(data.payload.waitingFor);
         // //TODO: interact with input field for bet amount, set limitations and default to big blind
-        // if (activeUser() !== userID) setActions([]);
+        if (activeUser() !== userID) setActions([]);
+
         // //setSecondaryActions([]);
-        // if (data.actions) {
-        //   setActions(data.actions);
-        //   // const betAmount = Number(prompt(
-        //   //   `bet between ${table.blinds.big} and ${data.payload.chips}`,
-        //   // ));
-        // }
+        if (data.actions) {
+          setActions(data.actions);
+          // const betAmount = Number(prompt(
+          //   `bet between ${table.blinds.big} and ${data.payload.chips}`,
+          // ));
+        }
 
         if (data.secondaryAction) {
           //TODO
@@ -104,11 +124,33 @@ export const Table: Component = () => {
   });
 
   onCleanup(() => {
-    clearInterval(interval);
+    if (userSocket) userSocket.close();
   });
   return (
     <section class="table">
       {JSON.stringify(table()?.players)}
+      <div class="md:w-2/3">
+        <h1></h1>
+        <div class="md:w-2/3">
+          <input
+            class="max-w-sm bg-green-900 appearance-none border-2 border-gray-500 rounded w-full py-2 px-4 text-gray-200 leading-tight focus:outline-none focus:bg-black focus:border-purple-500"
+            id="betAmount"
+            type="number"
+            value="25"
+          />
+        </div>
+        <For each={actions()} fallback={<div>Loading actions...</div>}>
+          {/* TODO: Add attributes for bet amount */}
+          {(action) => (
+            <button
+              class="bg-blue hover:bg-gray-100 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+              onClick={takeAction(action)}
+            >
+              {action}
+            </button>
+          )}
+        </For>
+      </div>
       <For each={table()?.players}>
         {(player) => <Player player={player} />}
       </For>

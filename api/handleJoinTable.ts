@@ -1,11 +1,9 @@
 export const sockets = new Map<string, WebSocket>();
 export const tableIDs = new Map();
 import { Player, PlayerInterface, Table } from "../utils/tableBlueprint.ts";
-import { send } from "./broadcast.ts";
 import { broadcast } from "./broadcast.ts";
 
 export const handleJoinTable = async (ctx) => {
-  let interval;
   //FIXME: only create socket if the game has started. otherwise just add them to the table list
   const serverTables = ctx.state.tables as Map<
     number,
@@ -68,25 +66,19 @@ export const handleJoinTable = async (ctx) => {
       },
       prompt: username + " joined table " + tableID,
     }, tableID);
-
-    // const interval = setInterval(() => {
-    //   // TODO: maybe consider disconnected players.
-    //   const table = serverTables.get(tableID);
+    //   TODO: consider disconnected players.
     if (currentPlayers.length >= currentTable.minPlayers) {
       currentTable.startGame();
     }
-    // }, 5000);
   };
 
   socket.onclose = async () => {
-    // TODO: withdraw nano to socket's wallet
     // mark as disconnected on the table
     console.log(
       `Client ${username || "is"} disconnected from table ${tableID}`,
     );
     sockets.delete(username);
     tableIDs.delete(username);
-    clearInterval(interval);
 
     if (!currentTable) return;
     currentTable.players = currentTable?.players.filter((p) =>

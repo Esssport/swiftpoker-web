@@ -8,12 +8,15 @@ export const populateHands = (
   const players = table.players;
   let gameState = table.gameState;
   let tableHands = gameState.hands;
+  console.log("TableHands", tableHands);
+  console.log("gameState.newGame", gameState.newGame);
   // also run if the game has ended, for next round
-  if (!tableHands || gameState.newGame) {
+  if (tableHands.flop.length === 0 || gameState.newGame) {
     const results = dealCards(table.id, players.length);
     gameState.hands = results;
   }
   const currentCards = gameState.hands;
+  console.log("currentCards", currentCards);
   const handsCopy = [
     ...currentCards.flop,
     currentCards.turn,

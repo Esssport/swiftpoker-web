@@ -45,7 +45,7 @@ export class GameState {
   activePosition: number;
   stage: "preflop" | "flop" | "turn" | "river" | "showdown" = "preflop";
   hands: { flop: Card[]; turn: Card; river: Card };
-  newGame: boolean;
+  newGame: boolean = true;
   smallBlindPlayed: boolean;
   bigBlindPlayed: boolean;
   promptingFor: string;
@@ -75,7 +75,7 @@ export class Table {
   minPlayers: number;
   type: string;
   id: number;
-  players = [];
+  players: Player[] = [];
   waitingList = [];
   sitOutPlayers = [];
   variantID: number;
@@ -105,9 +105,6 @@ export class Table {
 
   public addToWaitingList(player: Player) {
     this.waitingList.push(player);
-  }
-
-  public next() {
   }
 
   public startGame() {

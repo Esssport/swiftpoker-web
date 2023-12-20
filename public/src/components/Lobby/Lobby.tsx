@@ -35,7 +35,7 @@ const joinSimilarTable = () => {
     },
   );
   fetch(request).then((response) => {
-    console.log("message", response);
+    // console.log("message", response);
     response.json().then((data) => {
       setRedirectionData(data);
     });
@@ -53,7 +53,7 @@ export const Lobby: Component = () => {
     if (redirectionData().tableID) {
       const data = redirectionData();
       setRedirectionData({});
-      console.log("redirectionData", data);
+      // console.log("redirectionData", data);
       localStorage.setItem("username", data.username);
       localStorage.setItem("tableID", data.tableID.toString());
       localStorage.setItem("buyInAmount", data.buyInAmount.toString());
@@ -79,28 +79,16 @@ export const Lobby: Component = () => {
           value="a"
         />
       </div>
-      <div class="md:w-2/3">
+      {
+        /* <div class="md:w-2/3">
         <input
           class="max-w-sm bg-green-900 appearance-none border-2 border-gray-500 rounded w-full py-2 px-4 text-gray-200 leading-tight focus:outline-none focus:bg-black focus:border-purple-500"
           id="betAmount"
           type="number"
           value="25"
         />
-      </div>
-      <div class="md:w-2/3">
-        <h1></h1>
-        <For each={actions()} fallback={<div>Loading actions...</div>}>
-          {/* TODO: Add attributes for bet amount */}
-          {(action) => (
-            <button
-              class="bg-blue hover:bg-gray-100 text-gray-200 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
-              onClick={takeAction(action)}
-            >
-              {action}
-            </button>
-          )}
-        </For>
-      </div>
+      </div> */
+      }
       <button
         class="bg-blue hover:bg-gray-100 text-gray-200 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
         onClick={joinSimilarTable}
@@ -162,23 +150,23 @@ export const Lobby: Component = () => {
   );
 };
 
-const takeAction = (action: string) => () => {
-  const betAmount = document.getElementById(
-    "betAmount",
-  ) as HTMLInputElement;
-  const finalBetAmount = !!betAmount.value
-    ? +betAmount.value
-    : table().blinds.big;
-  currenBet = finalBetAmount;
-  userSocket.send(
-    //TODO: include userID in payload potentially
-    JSON.stringify({
-      event: "action-taken",
-      payload: { betAmount: currenBet, userID, action },
-    }),
-  );
-  console.log("action taken", action);
-};
+// const takeAction = (action: string) => () => {
+//   const betAmount = document.getElementById(
+//     "betAmount",
+//   ) as HTMLInputElement;
+//   const finalBetAmount = !!betAmount.value
+//     ? +betAmount.value
+//     : table().blinds.big;
+//   currenBet = finalBetAmount;
+//   userSocket.send(
+//     //TODO: include userID in payload potentially
+//     JSON.stringify({
+//       event: "action-taken",
+//       payload: { betAmount: currenBet, userID, action },
+//     }),
+//   );
+//   console.log("action taken", action);
+// };
 
 const createTable = () => {
   const request = new Request(
