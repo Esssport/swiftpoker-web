@@ -44,7 +44,7 @@ export class GameState {
   results: Result[];
   activePosition: number;
   stage: "preflop" | "flop" | "turn" | "river" | "showdown" = "preflop";
-  hands: { flop: Card[]; turn: Card; river: Card };
+  hands: { playerHands: Card[]; flop: Card[]; turn: Card; river: Card };
   newGame: boolean = true;
   smallBlindPlayed: boolean;
   bigBlindPlayed: boolean;
@@ -57,7 +57,9 @@ export class GameState {
     this.results = [];
     this.activePosition = 0;
     this.stage = "preflop";
-    this.hands = { flop: [], turn: null, river: null };
+    //make playerHands private
+
+    this.hands = { playerHands: [], flop: [], turn: null, river: null };
     this.newGame = true;
     this.smallBlindPlayed = false;
     this.bigBlindPlayed = false;

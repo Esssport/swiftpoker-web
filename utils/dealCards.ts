@@ -67,7 +67,7 @@ export const dealCards = (tableID, playerCount = 2) => {
   }
   const shuffledDeck: Card[] = shuffle(deck);
   const results = {
-    hands: shuffledDeck.slice(0, playerCount * 2),
+    playerHands: shuffledDeck.slice(0, playerCount * 2),
     flop: shuffledDeck.slice(playerCount * 2, playerCount * 2 + 3),
     turn: shuffledDeck[playerCount * 2 + 3],
     river: shuffledDeck[playerCount * 2 + 4],

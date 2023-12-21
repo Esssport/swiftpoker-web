@@ -18,9 +18,7 @@ export const populateHands = (
   const currentCards = gameState.hands;
   console.log("currentCards", currentCards);
   const handsCopy = [
-    ...currentCards.flop,
-    currentCards.turn,
-    currentCards.river,
+    ...currentCards.playerHands,
   ];
   return players.forEach((player: Player) => {
     if (!!stage) {

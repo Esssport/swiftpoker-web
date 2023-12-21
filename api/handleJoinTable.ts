@@ -57,11 +57,11 @@ export const handleJoinTable = async (ctx) => {
     if (!currentPlayers.find((player) => player.username === username)) {
       currentTable.addPlayer(newPlayer);
     }
-    console.log("serverTable", serverTables);
 
     broadcast({
       event: "table-updated",
       payload: {
+        //mask gameState sensitive values, or make them private attributes
         table: currentTable,
       },
       prompt: username + " joined table " + tableID,

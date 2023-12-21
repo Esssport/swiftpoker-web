@@ -32,10 +32,9 @@ const takeAction = (action: string) => () => {
     ? +betAmount.value
     : table().blinds.big;
   userSocket.send(
-    //TODO: include userID in payload potentially
     JSON.stringify({
       event: "action-taken",
-      payload: { betAmount: finalBetAmount, userID, action },
+      payload: { betAmount: finalBetAmount, action },
     }),
   );
   console.log("action taken", action);
@@ -46,6 +45,7 @@ const joinTable = () => {
   const tableID = localStorage.getItem("tableID");
   const buyInAmount = localStorage.getItem("buyInAmount");
 
+  userID = username;
   // localStorage.removeItem("username");
   localStorage.removeItem("tableID");
   localStorage.removeItem("buyInAmount");
@@ -75,6 +75,7 @@ const joinTable = () => {
       case "table-updated":
         setTable(data.payload.table);
         console.log("data", data);
+        console.log("gameState.hands", table()?.gameState.hands);
         // setGameState(data.payload.gameState);
         setActiveUser(data.payload.waitingFor);
         // //TODO: interact with input field for bet amount, set limitations and default to big blind
@@ -128,7 +129,7 @@ export const Table: Component = () => {
   });
   return (
     <section class="table">
-      {JSON.stringify(table()?.players)}
+      {JSON.stringify(table()?.gameState.hands)}
       <div class="md:w-2/3">
         <h1></h1>
         <div class="md:w-2/3">
@@ -161,14 +162,29 @@ export const Table: Component = () => {
   );
 };
 
-const Player = ({ player }) => {
+const Player = ({ player }: { player: PlayerType }) => {
   return (
     <div class="player">
       {true
         ? (
-          <div class="player-image-section">
+          <div
+            classList={{
+              "player-image-section": true,
+              active: activeUser() === player.username,
+            }}
+          >
+            <br /> role: {player.role}
+            {player.isDealer && (
+              <>
+                <br />dealer
+              </>
+            )}
             <div class="player-name">{player.username}</div>
-            <div class="player-hand">{player.hand}</div>
+            <div class="player-hand">
+              {player.hand && player.hand[0][0]}
+              <br />
+              {player.hand && player.hand[1][0]}
+            </div>
             <div class="player-chips">{player.chips}</div>
           </div>
         )
