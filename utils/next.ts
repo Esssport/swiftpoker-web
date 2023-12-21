@@ -1,12 +1,11 @@
-import { Table } from "./tableBlueprint.ts";
+import { Player, Table } from "./tableBlueprint.ts";
 import { determinePositions } from "./determinePositions.ts";
 import { handleWinnings } from "./handleWinnings.ts";
 import { populateHands } from "./populateHands.ts";
 import { promptBet } from "./promptBet.ts";
 import { takeAction } from "./takeAction.ts";
 
-//TODO: deal hands after the blinds have been placed.
-export let nextCounter = 0;
+let nextCounter = 0;
 
 export const next = (table: Table) => {
   nextCounter += 1;
@@ -91,10 +90,9 @@ export const next = (table: Table) => {
   if (gameState.newGame) {
     determinePositions(table);
     populateHands(table);
-
-    // players.forEach((p) => {
-    //   console.log("PLAYER", p.username, "position", p.position);
-    // });
+    players.forEach((p) => {
+      p.transmitHand();
+    });
   }
 
   player = players.find((p) => p.position === gameState.activePosition);

@@ -37,11 +37,12 @@ export const handleWinnings = (table: Table) => {
   }`;
 
   console.log("WINNERS", winnerPrompt);
-
   broadcast({
     event: "table-updated",
     payload: {
+      communityCards: table.gameState.hands,
       table,
+      hands: table.allHands,
       prompt: "Hand over! " + winnerPrompt,
     },
   }, table.id);
@@ -56,6 +57,11 @@ export const handleWinnings = (table: Table) => {
   // state.promptingFor = null;
   // state.highestBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
   // state.stage = "preflop";
+  if (table.players.length < table.minPlayers) {
+    state.stage = "waiting";
+    console.log("NOT ENOUGH PLAYERS");
+    return;
+  }
   // state.nextRound = true;
   // state.hands = null;
   // table.communityCards = [];

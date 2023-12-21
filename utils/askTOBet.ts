@@ -31,6 +31,7 @@ export const askTOBet = (
   const payload = {
     waitingFor: username,
     table,
+    communityCards: table.gameState.hands,
     //TODO: make a copy of gameState and remove sensitive info
     gameState,
     chips: player.chips,

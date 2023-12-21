@@ -9,6 +9,7 @@ import "./Table.scss";
 const [table, setTable] = createSignal<TableType>();
 const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
+const [hands, setHands] = createSignal([]);
 let userSocket: WebSocket;
 let userID: string;
 // const getTableData = (tableID) => {
@@ -40,15 +41,17 @@ const takeAction = (action: string) => () => {
   console.log("action taken", action);
 };
 
+//TODO: Add cards and other information into localStorage if necessary to continue showing them if browser is refreshed
+
 const joinTable = () => {
   const username = localStorage.getItem("username");
   const tableID = localStorage.getItem("tableID");
   const buyInAmount = localStorage.getItem("buyInAmount");
 
   userID = username;
-  // localStorage.removeItem("username");
-  localStorage.removeItem("tableID");
-  localStorage.removeItem("buyInAmount");
+  // // localStorage.removeItem("username");
+  // localStorage.removeItem("tableID");
+  // localStorage.removeItem("buyInAmount");
 
   //TODO: Add Try catch block
   const serverSocket = new WebSocket(
@@ -71,11 +74,10 @@ const joinTable = () => {
       // setPrompts(data.payload.prompt);
     }
     // if (data.payload?.table) setPlayers(data.payload.table.players);
+    console.log("data", data);
     switch (data.event) {
       case "table-updated":
         setTable(data.payload.table);
-        console.log("data", data);
-        console.log("gameState.hands", table()?.gameState.hands);
         // setGameState(data.payload.gameState);
         setActiveUser(data.payload.waitingFor);
         // //TODO: interact with input field for bet amount, set limitations and default to big blind
@@ -92,6 +94,9 @@ const joinTable = () => {
         if (data.secondaryAction) {
           //TODO
         }
+        break;
+      case "hands-updated":
+        setHands(data.payload.hands);
         break;
     }
   };
@@ -116,7 +121,7 @@ const joinTable = () => {
 //TODO: add a For element and loop over all the players and pass them to <Player /> component
 export const Table: Component = () => {
   const params = useParams();
-  const tableID = params.tableID;
+  // const tableID = params.tableID;
 
   onMount(() => {
     // getTableData(tableID);
@@ -129,7 +134,7 @@ export const Table: Component = () => {
   });
   return (
     <section class="table">
-      {JSON.stringify(table()?.gameState.hands)}
+      {JSON.stringify(hands())}
       <div class="md:w-2/3">
         <h1></h1>
         <div class="md:w-2/3">

@@ -74,7 +74,7 @@ export const handleCreateTables = async (
       serverTables.set(newTable.id, newTable);
     }
   }
-  console.log("Table created", serverTables);
+  // console.log("Table created", serverTables);
 
   ctx.response.body = JSON.stringify(Array.from(serverTables));
 };

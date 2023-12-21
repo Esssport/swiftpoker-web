@@ -63,6 +63,7 @@ export const handleJoinTable = async (ctx) => {
       payload: {
         //mask gameState sensitive values, or make them private attributes
         table: currentTable,
+        // communityCards: currentTable.gameState.hands,
       },
       prompt: username + " joined table " + tableID,
     }, tableID);

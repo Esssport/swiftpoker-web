@@ -2,6 +2,7 @@ import { takeAction } from "./takeAction.ts";
 import { next } from "./next.ts";
 import { Card, Result } from "../data_types.ts";
 import { deck, shuffle } from "./dealCards.ts";
+import { send } from "../api/broadcast.ts";
 export interface TableConfig {
   blinds: { small: number; big: number };
   buyInRange: { min: number; max: number };
@@ -27,7 +28,7 @@ export class Player {
   role: "smallBlind" | "bigBlind";
   bets: { preflop: number; flop: number; turn: number; river: number };
   private _hand: Card[];
-  folded: boolean;
+  folded: boolean = true;
   allIn: boolean;
   hasChecked: boolean;
 
@@ -39,10 +40,21 @@ export class Player {
     return this._hand;
   }
 
+  public transmitHand() {
+    send(this.socket, {
+      event: "hands-updated",
+      payload: {
+        hands: [{ username: this.username, hand: this.hand }],
+      },
+    });
+    console.log("hand sent to ", this.username);
+  }
+
   constructor(player: PlayerInterface) {
     this.username = player.username;
     this.socket = player.socket;
     this.chips = player.chips;
+    this.folded = true;
     this.bets = { preflop: 0, flop: 0, turn: 0, river: 0 };
   }
 }
@@ -52,7 +64,7 @@ export class GameState {
   winners: Result[];
   results: Result[];
   activePosition: number;
-  stage: "preflop" | "flop" | "turn" | "river" | "showdown" = "preflop";
+  stage: "waiting" | "preflop" | "flop" | "turn" | "river" | "showdown";
   private _hands: {
     playerHands?: Card[];
     flop?: Card[];
@@ -70,7 +82,7 @@ export class GameState {
     this.winners = [];
     this.results = [];
     this.activePosition = 0;
-    this.stage = "preflop";
+    this.stage = "waiting";
     this._hands = { playerHands: [], flop: [], turn: null, river: null };
     this.newGame = true;
     this.smallBlindPlayed = false;
@@ -80,9 +92,8 @@ export class GameState {
   }
 
   public get hands() {
+    console.log("GETTING HANDS", this.stage, this._hands);
     switch (this.stage) {
-      case "preflop":
-        return {};
       case "flop":
         return { flop: this._hands.flop };
       case "turn":
@@ -93,6 +104,8 @@ export class GameState {
           turn: this._hands.turn,
           river: this._hands.river,
         };
+      default:
+        return {};
     }
   }
 
@@ -129,6 +142,9 @@ export class Table {
 
   dealCards(playerCount: number) {
     console.log("DEALING FOR ", playerCount);
+    this.players.forEach((player) => {
+      player.folded = false;
+    });
     const shuffledDeck: Card[] = shuffle(deck);
     const results = {
       playerHands: shuffledDeck.slice(0, playerCount * 2),
@@ -137,6 +153,13 @@ export class Table {
       river: shuffledDeck[playerCount * 2 + 4],
     };
     return results;
+  }
+
+  public get allHands() {
+    return this.players.map((player) => {
+      //TODO: filter out people who chose not to show their hands
+      return { username: player.username, hand: player.hand };
+    });
   }
 
   constructor(config: TableConfig) {
@@ -164,9 +187,11 @@ export class Table {
   }
 
   public startGame() {
-    const players = this.players;
+    //handle case where a user joins a table that is already in progress
+    //handle case where a user leaves a table that is in progress
+    //handle case where a user leaves and re-joins a table that is in progress
     next(this);
-    players.forEach((player) => {
+    this.players.forEach((player) => {
       player.socket.onmessage = (m) => {
         const data = JSON.parse(m.data);
         const gameState = this.gameState;
