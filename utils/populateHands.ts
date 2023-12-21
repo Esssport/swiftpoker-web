@@ -1,5 +1,4 @@
 import { Player, Table } from "./tableBlueprint.ts";
-import { dealCards } from "./dealCards.ts";
 
 export const populateHands = (
   table: Table,
@@ -11,14 +10,14 @@ export const populateHands = (
   console.log("TableHands", tableHands);
   console.log("gameState.newGame", gameState.newGame);
   // also run if the game has ended, for next round
-  if (tableHands.flop.length === 0 || gameState.newGame) {
-    const results = dealCards(table.id, players.length);
+  if (tableHands.flop?.length === 0 || gameState.newGame) {
+    const results = table.dealCards(players.length);
     gameState.hands = results;
   }
   const currentCards = gameState.hands;
   console.log("currentCards", currentCards);
   const handsCopy = [
-    ...currentCards.playerHands,
+    ...gameState.playerCards,
   ];
   return players.forEach((player: Player) => {
     if (!!stage) {

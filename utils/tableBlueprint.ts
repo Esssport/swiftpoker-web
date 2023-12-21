@@ -1,6 +1,7 @@
 import { takeAction } from "./takeAction.ts";
 import { next } from "./next.ts";
 import { Card, Result } from "../data_types.ts";
+import { deck, shuffle } from "./dealCards.ts";
 export interface TableConfig {
   blinds: { small: number; big: number };
   buyInRange: { min: number; max: number };
@@ -25,10 +26,18 @@ export class Player {
   position: number;
   role: "smallBlind" | "bigBlind";
   bets: { preflop: number; flop: number; turn: number; river: number };
-  hand: Card[];
+  private _hand: Card[];
   folded: boolean;
   allIn: boolean;
   hasChecked: boolean;
+
+  public set hand(cards: Card[]) {
+    this._hand = cards;
+  }
+
+  public get hand() {
+    return this._hand;
+  }
 
   constructor(player: PlayerInterface) {
     this.username = player.username;
@@ -44,7 +53,12 @@ export class GameState {
   results: Result[];
   activePosition: number;
   stage: "preflop" | "flop" | "turn" | "river" | "showdown" = "preflop";
-  hands: { playerHands: Card[]; flop: Card[]; turn: Card; river: Card };
+  private _hands: {
+    playerHands?: Card[];
+    flop?: Card[];
+    turn?: Card;
+    river?: Card;
+  };
   newGame: boolean = true;
   smallBlindPlayed: boolean;
   bigBlindPlayed: boolean;
@@ -57,14 +71,42 @@ export class GameState {
     this.results = [];
     this.activePosition = 0;
     this.stage = "preflop";
-    //make playerHands private
-
-    this.hands = { playerHands: [], flop: [], turn: null, river: null };
+    this._hands = { playerHands: [], flop: [], turn: null, river: null };
     this.newGame = true;
     this.smallBlindPlayed = false;
     this.bigBlindPlayed = false;
     this.promptingFor = null;
     this.highestBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+  }
+
+  public get hands() {
+    switch (this.stage) {
+      case "preflop":
+        return {};
+      case "flop":
+        return { flop: this._hands.flop };
+      case "turn":
+        return { flop: this._hands.flop, turn: this._hands.turn };
+      case "river":
+        return {
+          flop: this._hands.flop,
+          turn: this._hands.turn,
+          river: this._hands.river,
+        };
+    }
+  }
+
+  public set hands(cards: {
+    playerHands?: Card[];
+    flop?: Card[];
+    turn?: Card;
+    river?: Card;
+  }) {
+    this._hands = cards;
+  }
+
+  public get playerCards() {
+    return this._hands.playerHands;
   }
 }
 
@@ -84,6 +126,18 @@ export class Table {
   firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
   pot = 0;
   gameState: GameState;
+
+  dealCards(playerCount: number) {
+    console.log("DEALING FOR ", playerCount);
+    const shuffledDeck: Card[] = shuffle(deck);
+    const results = {
+      playerHands: shuffledDeck.slice(0, playerCount * 2),
+      flop: shuffledDeck.slice(playerCount * 2, playerCount * 2 + 3),
+      turn: shuffledDeck[playerCount * 2 + 3],
+      river: shuffledDeck[playerCount * 2 + 4],
+    };
+    return results;
+  }
 
   constructor(config: TableConfig) {
     this.gameState = new GameState();
