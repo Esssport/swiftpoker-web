@@ -92,21 +92,26 @@ export class GameState {
   }
 
   public get hands() {
-    console.log("GETTING HANDS", this.stage, this._hands);
+    let avaliablHands = {};
     switch (this.stage) {
       case "flop":
-        return { flop: this._hands.flop };
+        avaliablHands = { flop: this._hands.flop };
+        break;
       case "turn":
-        return { flop: this._hands.flop, turn: this._hands.turn };
+        avaliablHands = { flop: this._hands.flop, turn: this._hands.turn };
+        break;
       case "river":
-        return {
+        avaliablHands = {
           flop: this._hands.flop,
           turn: this._hands.turn,
           river: this._hands.river,
         };
+        break;
       default:
-        return {};
+        avaliablHands = {};
     }
+    console.log("avaliablHands", this.stage, avaliablHands);
+    return avaliablHands;
   }
 
   public set hands(cards: {

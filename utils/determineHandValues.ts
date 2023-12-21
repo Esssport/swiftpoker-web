@@ -2,6 +2,7 @@ import { Card, Result } from "../data_types.ts";
 import { Table } from "./tableBlueprint.ts";
 
 export const determineHandValues = (table: Table): Result[] => {
+  //TODO: move this to table class so that it can be called on all players each stage
   const state = table.gameState;
   const results = state.results;
   const playerCards = table.players

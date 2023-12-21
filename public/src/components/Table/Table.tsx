@@ -5,11 +5,13 @@ import {
   Table as TableType,
 } from "../../../../utils/tableBlueprint.ts";
 import "./Table.scss";
-
 const [table, setTable] = createSignal<TableType>();
 const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
-const [hands, setHands] = createSignal([]);
+const [hands, setHands] = createSignal<[{ hand?: []; username?: string }]>([
+  {},
+]);
+const [communityCards, setCommunityCards] = createSignal([]);
 let userSocket: WebSocket;
 let userID: string;
 // const getTableData = (tableID) => {
@@ -77,6 +79,19 @@ const joinTable = () => {
     console.log("data", data);
     switch (data.event) {
       case "table-updated":
+        const cardsArray = [];
+        const communityCards = data.payload.communityCards;
+        if (communityCards && communityCards.flop?.length === 3) {
+          cardsArray.push(...communityCards.flop);
+        }
+        if (communityCards && communityCards.turn) {
+          cardsArray.push(communityCards.turn);
+        }
+        if (communityCards && communityCards.river) {
+          cardsArray.push(communityCards.river);
+        }
+        setCommunityCards(cardsArray);
+
         setTable(data.payload.table);
         // setGameState(data.payload.gameState);
         setActiveUser(data.payload.waitingFor);
@@ -96,7 +111,11 @@ const joinTable = () => {
         }
         break;
       case "hands-updated":
-        setHands(data.payload.hands);
+        if (data.payload.hands.length === 1) {
+          setHands(data.payload.hands);
+        } else {
+        }
+        //TODO: set user's hands based on username, not index, this way at the end of the game, the user can see other's cards
         break;
     }
   };
@@ -168,6 +187,7 @@ export const Table: Component = () => {
 };
 
 const Player = ({ player }: { player: PlayerType }) => {
+  console.log("hands()", hands());
   return (
     <div class="player">
       {true
@@ -186,9 +206,13 @@ const Player = ({ player }: { player: PlayerType }) => {
             )}
             <div class="player-name">{player.username}</div>
             <div class="player-hand">
-              {player.hand && player.hand[0][0]}
+              {
+                /* {hands()?.hand && hands()?.username === player.username
+                ? hands().hand
+                : "no cards"} */
+              }
               <br />
-              {player.hand && player.hand[1][0]}
+              {/* {player.hand && player.hand[1][0]} */}
             </div>
             <div class="player-chips">{player.chips}</div>
           </div>
