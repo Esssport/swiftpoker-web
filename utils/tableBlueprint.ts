@@ -41,10 +41,13 @@ export class Player {
   }
 
   public transmitHand() {
+    //TODO: Return a map of usernames and their hands
+    const hands = new Map();
+    hands.set(this.username, this.hand);
     send(this.socket, {
       event: "hands-updated",
       payload: {
-        hands: [{ username: this.username, hand: this.hand }],
+        hands: Array.from(hands),
       },
     });
     console.log("hand sent to ", this.username);
@@ -157,14 +160,17 @@ export class Table {
       turn: shuffledDeck[playerCount * 2 + 3],
       river: shuffledDeck[playerCount * 2 + 4],
     };
+    console.log("current cards", results);
     return results;
   }
 
   public get allHands() {
-    return this.players.map((player) => {
+    const hands = new Map();
+    this.players.forEach((player) => {
       //TODO: filter out people who chose not to show their hands
-      return { username: player.username, hand: player.hand };
+      hands.set(player.username, player.hand);
     });
+    return Array.from(hands);
   }
 
   constructor(config: TableConfig) {

@@ -5,12 +5,11 @@ import {
   Table as TableType,
 } from "../../../../utils/tableBlueprint.ts";
 import "./Table.scss";
+import { Card } from "../../../../data_types.ts";
 const [table, setTable] = createSignal<TableType>();
 const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
-const [hands, setHands] = createSignal<[{ hand?: []; username?: string }]>([
-  {},
-]);
+const [hands, setHands] = createSignal<Map<string, Card[]>>(new Map());
 const [communityCards, setCommunityCards] = createSignal([]);
 let userSocket: WebSocket;
 let userID: string;
@@ -77,6 +76,10 @@ const joinTable = () => {
     }
     // if (data.payload?.table) setPlayers(data.payload.table.players);
     console.log("data", data);
+    if (!!data.payload?.hands) {
+      const handsMap: Map<string, Card[]> = new Map(data.payload.hands);
+      setHands(handsMap);
+    }
     switch (data.event) {
       case "table-updated":
         const cardsArray = [];
@@ -111,11 +114,6 @@ const joinTable = () => {
         }
         break;
       case "hands-updated":
-        if (data.payload.hands.length === 1) {
-          setHands(data.payload.hands);
-        } else {
-        }
-        //TODO: set user's hands based on username, not index, this way at the end of the game, the user can see other's cards
         break;
     }
   };
@@ -187,7 +185,8 @@ export const Table: Component = () => {
 };
 
 const Player = ({ player }: { player: PlayerType }) => {
-  console.log("hands()", hands());
+  const playerHands = hands()?.get(player.username);
+  console.log("playerHands", playerHands);
   return (
     <div class="player">
       {true
@@ -206,11 +205,13 @@ const Player = ({ player }: { player: PlayerType }) => {
             )}
             <div class="player-name">{player.username}</div>
             <div class="player-hand">
-              {
-                /* {hands()?.hand && hands()?.username === player.username
-                ? hands().hand
-                : "no cards"} */
-              }
+              {playerHands
+                ? (
+                  <For each={playerHands}>
+                    {(card) => <div>{JSON.stringify(card)}</div>}
+                  </For>
+                )
+                : "no cards"}
               <br />
               {/* {player.hand && player.hand[1][0]} */}
             </div>
