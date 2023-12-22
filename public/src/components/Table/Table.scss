@@ -52,6 +52,15 @@ section.table {
 
   }
 
+  .community-cards {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 56%;
+  }
+
   // .player-image-section {
   // padding: 35%;
   // border-radius: 10%;

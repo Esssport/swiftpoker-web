@@ -63,7 +63,7 @@ const joinTable = () => {
     console.log("ERROR", e);
   };
   serverSocket.onclose = (e) => {
-    console.log(username, e.reason);
+    console.log(username, e);
   };
   serverSocket.onopen = (ws) => {
     serverSocket.send(JSON.stringify("connected to table " + tableID));
@@ -178,6 +178,20 @@ export const Table: Component = () => {
         {(player) => <Player player={player} />}
       </For>
 
+      <div class="community-cards">
+        <For each={communityCards()}>
+          {(card) => (
+            <img
+              class="hand-image"
+              src={`/src/assets/cards/${card[0]}.png`}
+            >
+              //TODO: change this to altText
+              {`${card[1].name} of ${card[1].suit}`}
+            </img>
+          )}
+        </For>
+      </div>
+
       {}
       <div>Table ID: {table()?.id}</div>
     </section>
@@ -186,7 +200,7 @@ export const Table: Component = () => {
 
 const Player = ({ player }: { player: PlayerType }) => {
   const playerHands = hands()?.get(player.username);
-  console.log("playerHands", playerHands);
+  // console.log("communityCards", communityCards());
   return (
     <div class="player">
       {true
