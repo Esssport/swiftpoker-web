@@ -204,16 +204,36 @@ const Player = ({ player }: { player: PlayerType }) => {
               </>
             )}
             <div class="player-name">{player.username}</div>
-            <div class="player-hand">
+            <div classList={{ "player-hand": true, "folded": player.folded }}>
               {playerHands
                 ? (
                   <For each={playerHands}>
-                    {(card) => <div>{JSON.stringify(card)}</div>}
+                    {(card) => (
+                      <img
+                        class="hand-image"
+                        src={`/src/assets/cards/${card[0]}.png`}
+                      >
+                        {`${card[1].name} of ${card[1].suit}`}
+                      </img>
+                    )}
                   </For>
                 )
-                : "no cards"}
-              <br />
-              {/* {player.hand && player.hand[1][0]} */}
+                : (
+                  <>
+                    <img
+                      class="hand-image"
+                      src={`/src/assets/cards/hand.png`}
+                    >
+                      hidden cards
+                    </img>
+                    <img
+                      class="hand-image"
+                      src={`/src/assets/cards/hand.png`}
+                    >
+                      hidden cards
+                    </img>
+                  </>
+                )}
             </div>
             <div class="player-chips">{player.chips}</div>
           </div>

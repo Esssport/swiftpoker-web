@@ -46,15 +46,30 @@ section.table {
     min-width: 120px;
     min-height: 120px;
     margin: -15px 0 0 -15px;
+    background: rgb(51, 6, 185);
+    color: whitesmoke;
     /* half the width/height */
 
   }
 
-  .player-image-section {
-    padding: 35%;
-    border-radius: 10%;
-    background: rgb(51, 6, 185);
-    color: whitesmoke;
+  // .player-image-section {
+  // padding: 35%;
+  // border-radius: 10%;
+  // }
+
+  .player-hand {
+    display: flex;
+  }
+
+  .folded {
+    display: none;
+  }
+
+
+  .hand-image {
+    width: 70px;
+    margin: 0 2px;
+
   }
 
   /* Rotate each player around the table */
