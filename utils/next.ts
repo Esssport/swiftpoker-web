@@ -18,6 +18,7 @@ export const next = (table: Table) => {
   let remainingPlayers = players.filter((p) => !p.folded);
   if (remainingPlayers.length === 1) {
     handleWinnings(table);
+    return;
   }
   console.log(
     "NEXT",
@@ -51,15 +52,12 @@ export const next = (table: Table) => {
     switch (stage) {
       case "preflop":
         gameState.stage = "flop";
-        // table.communityCards = gameState.hands.flop;
         break;
       case "flop":
         gameState.stage = "turn";
-        // table.communityCards.push(gameState.hands.turn);
         break;
       case "turn":
         gameState.stage = "river";
-        // table.communityCards.push(gameState.hands.river);
         break;
       case "river":
         gameState.stage = "showdown";

@@ -1,4 +1,4 @@
-import { Player, Table } from "./tableBlueprint.ts";
+import { Table } from "./tableBlueprint.ts";
 
 export const determinePositions = (table: Table) => {
   const players = table.players;

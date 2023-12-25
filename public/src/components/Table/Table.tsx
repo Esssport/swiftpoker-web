@@ -185,7 +185,7 @@ export const Table: Component = () => {
               class="hand-image"
               src={`/src/assets/cards/${card[0]}.png`}
             >
-              //TODO: change this to altText
+              {/* //TODO: change this to altText */}
               {`${card[1].name} of ${card[1].suit}`}
             </img>
           )}

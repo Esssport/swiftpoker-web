@@ -31,49 +31,56 @@ export const handleWinnings = (table: Table) => {
     }
   }
   state.winners = winners;
+  let winnerPrompt = "";
   //TODO: handle case where there is a tie or somebody folds
-  const winnerPrompt = `${winners[0].username} won ${table.pot} chips with ${
-    winners[0].handName
-  }`;
-
+  const hands = [];
+  if (remainingPlayers.length > 1) {
+    hands.push(table.allHands);
+    winnerPrompt = `${winners[0].username} won ${table.pot} chips with ${
+      winners[0].handName
+    }`;
+  } else {
+    winnerPrompt = `${
+      winners[0].username
+    } won ${table.pot} chips since everyone else folded`;
+  }
   console.log("WINNERS", winnerPrompt);
   broadcast({
     event: "table-updated",
     payload: {
       communityCards: table.gameState.hands,
       table,
-      hands: table.allHands,
+      hands: hands,
       prompt: "Hand over! " + winnerPrompt,
     },
   }, table.id);
 
   //IF goNextRound is true, then go to next round
 
-  // table.pot = 0;
-  // state.smallBlindPlayed = false;
-  // state.bigBlindPlayed = false;
-  // state.newGame = true;
-  // state.activePosition = 0;
-  // state.promptingFor = null;
-  // state.highestBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
-  // state.stage = "preflop";
+  table.pot = 0;
+  state.smallBlindPlayed = false;
+  state.bigBlindPlayed = false;
+  state.newGame = true;
+  state.activePosition = 0;
+  state.promptingFor = null;
+  state.highestBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+  state.stage = "preflop";
   if (table.players.length < table.minPlayers) {
     state.stage = "waiting";
     console.log("NOT ENOUGH PLAYERS");
     return;
   }
-  // state.nextRound = true;
-  // state.hands = null;
-  // table.communityCards = [];
-  // table.firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+  state.nextRound = true;
+  state.hands = null;
+  table.firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
 
-  // players.forEach((p) => {
-  //   p.bets = { preflop: 0, flop: 0, turn: 0, river: 0 };
-  //   p.folded = false;
-  //   p.allIn = false;
-  //   p.hasChecked = false;
-  //   p.hand = [];
-  // });
-  // next(table);
+  players.forEach((p) => {
+    p.bets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+    p.folded = false;
+    p.allIn = false;
+    p.hasChecked = false;
+    p.hand = [];
+  });
+  next(table);
   return;
 };

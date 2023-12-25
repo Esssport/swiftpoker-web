@@ -7,13 +7,13 @@ export const populateHands = (
   const players = table.players;
   let gameState = table.gameState;
   let tableHands = gameState.hands;
-  console.log("TableHands", tableHands);
-  console.log("gameState.newGame", gameState.newGame);
   // also run if the game has ended, for next round
-  if (tableHands.flop?.length === 0 || gameState.newGame) {
+  if (!tableHands.flop || tableHands.flop?.length === 0 || gameState.newGame) {
     const results = table.dealCards(players.length);
     gameState.hands = results;
   }
+  console.log("TableHands", tableHands);
+  console.log("gameState.newGame", gameState.newGame);
   const currentCards = gameState.hands;
   console.log("currentCards", currentCards);
   const handsCopy = [

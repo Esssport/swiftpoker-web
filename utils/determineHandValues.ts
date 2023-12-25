@@ -10,13 +10,32 @@ export const determineHandValues = (table: Table): Result[] => {
       return !player.folded;
     })
     .map((player) => {
+      console.log("playerrrrrr", player.username);
       results.push({ username: player.username });
-      return [
-        ...player.hand,
-        ...state.hands.flop,
-        state.hands.turn,
-        state.hands.river,
-      ];
+      //TODO: handle cases where there are less than 5 cards
+      const finalCards = [];
+      const cardPlaceHolder = ["00", { suit: "", rank: 0, name: "" }];
+
+      if (player.hand?.length === 2) {
+        finalCards.push(...player.hand);
+      }
+      if (state.hands.flop?.length === 3) {
+        finalCards.push(...state.hands.flop);
+      }
+      if (state.hands.turn) {
+        finalCards.push(state.hands.turn);
+      }
+      if (state.hands.river) {
+        finalCards.push(state.hands.river);
+      }
+
+      // if (finalCards.length < 7) {
+      //   for (let i = finalCards.length; i < 7; i++) {
+      //     finalCards.push(cardPlaceHolder);
+      //   }
+      // }
+      return finalCards;
+      // console.log("finalCards", finalCards);
     });
 
   playerCards.forEach((hand: Card[], i: number) => {

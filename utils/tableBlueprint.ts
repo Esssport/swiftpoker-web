@@ -65,7 +65,7 @@ export class Player {
 export class GameState {
   nextRound: boolean;
   winners: Result[];
-  results: Result[];
+  results: Result[] = [];
   activePosition: number;
   stage: "waiting" | "preflop" | "flop" | "turn" | "river" | "showdown";
   private _hands: {
@@ -95,26 +95,26 @@ export class GameState {
   }
 
   public get hands() {
-    let avaliablHands = {};
+    let availableHands = {};
     switch (this.stage) {
       case "flop":
-        avaliablHands = { flop: this._hands.flop };
+        availableHands = { flop: this._hands.flop };
         break;
       case "turn":
-        avaliablHands = { flop: this._hands.flop, turn: this._hands.turn };
+        availableHands = { flop: this._hands.flop, turn: this._hands.turn };
         break;
       case "river":
-        avaliablHands = {
+      case "showdown":
+        availableHands = {
           flop: this._hands.flop,
           turn: this._hands.turn,
           river: this._hands.river,
         };
         break;
       default:
-        avaliablHands = {};
+        availableHands = {};
     }
-    console.log("avaliablHands", this.stage, avaliablHands);
-    return avaliablHands;
+    return availableHands;
   }
 
   public set hands(cards: {
