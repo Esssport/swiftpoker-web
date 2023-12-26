@@ -97,7 +97,10 @@ const joinTable = () => {
 
         setTable(data.payload.table);
         // setGameState(data.payload.gameState);
-        setActiveUser(data.payload.waitingFor);
+        console.log("data.payload.waitingFor", data.payload.waitingFor);
+        if (data.payload.waitingFor) {
+          setActiveUser(data.payload.waitingFor);
+        }
         // //TODO: interact with input field for bet amount, set limitations and default to big blind
         if (activeUser() !== userID) setActions([]);
 
@@ -142,7 +145,7 @@ export const Table: Component = () => {
 
   onMount(() => {
     // getTableData(tableID);
-    //run joinTable if redirected from lobby, otherwise join if user clicks on join button
+    //run joinTable if redirected from lobby, otherwise join if user clicks on join button and call watchTable();
     joinTable();
   });
 
@@ -151,33 +154,48 @@ export const Table: Component = () => {
   });
   return (
     <section class="table">
-      {JSON.stringify(hands())}
-      <div class="md:w-2/3">
-        <h1></h1>
-        <div class="md:w-2/3">
-          <input
-            class="max-w-sm bg-green-900 appearance-none border-2 border-gray-500 rounded w-full py-2 px-4 text-gray-200 leading-tight focus:outline-none focus:bg-black focus:border-purple-500"
-            id="betAmount"
-            type="number"
-            value="25"
-          />
+      <div class="actions-section">
+        {actions()?.length > 0
+          ? (
+            <input
+              id="betAmount"
+              type="number"
+              value={table()?.blinds.big}
+            />
+          )
+          : null}
+        <div class="actions">
+          <For each={actions()}>
+            {/* TODO: Add attributes for bet amount */}
+            {(action) => (
+              <button
+                class="bg-blue hover:bg-gray-100 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+                onClick={takeAction(action)}
+              >
+                {action}
+              </button>
+            )}
+          </For>
         </div>
-        <For each={actions()} fallback={<div>Loading actions...</div>}>
-          {/* TODO: Add attributes for bet amount */}
-          {(action) => (
-            <button
-              class="bg-blue hover:bg-gray-100 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
-              onClick={takeAction(action)}
-            >
-              {action}
-            </button>
-          )}
-        </For>
       </div>
-      <For each={table()?.players}>
-        {(player) => <Player player={player} />}
-      </For>
+      <section class="players">
+        <For each={table()?.players}>
+          {(player) => <Player player={player} />}
+        </For>
 
+        {
+          /* {table()?.players?.length > 0
+          ? (
+            <>
+              <Player player={table()?.players[0]} />
+              <Player player={table()?.players[0]} />
+              <Player player={table()?.players[0]} />
+              <Player player={table()?.players[0]} />
+            </>
+          )
+          : null} */
+        }
+      </section>
       <div class="community-cards">
         <For each={communityCards()}>
           {(card) => (
@@ -191,26 +209,22 @@ export const Table: Component = () => {
           )}
         </For>
       </div>
-
-      {}
-      <div>Table ID: {table()?.id}</div>
     </section>
   );
 };
 
 const Player = ({ player }: { player: PlayerType }) => {
   const playerHands = hands()?.get(player.username);
-  // console.log("communityCards", communityCards());
   return (
-    <div class="player">
+    <div
+      classList={{
+        "player": true,
+        active: activeUser() === player.username,
+      }}
+    >
       {true
         ? (
-          <div
-            classList={{
-              "player-image-section": true,
-              active: activeUser() === player.username,
-            }}
-          >
+          <div class="player-image-section">
             <br /> role: {player.role}
             {player.isDealer && (
               <>

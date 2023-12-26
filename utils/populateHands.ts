@@ -12,10 +12,7 @@ export const populateHands = (
     const results = table.dealCards(players.length);
     gameState.hands = results;
   }
-  console.log("TableHands", tableHands);
-  console.log("gameState.newGame", gameState.newGame);
   const currentCards = gameState.hands;
-  console.log("currentCards", currentCards);
   const handsCopy = [
     ...gameState.playerCards,
   ];
