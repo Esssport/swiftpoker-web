@@ -19,7 +19,6 @@ const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
 const [hands, setHands] = createSignal<Map<string, Card[]>>(new Map());
 const [communityCards, setCommunityCards] = createSignal([]);
-const [pot, setPot] = createSignal(0);
 let userSocket: WebSocket;
 let userID: string;
 // const getTableData = (tableID) => {
@@ -102,9 +101,6 @@ const joinTable = () => {
         }
         if (communityCards && communityCards.river) {
           cardsArray.push(communityCards.river);
-        }
-        if (data.payload.pot) {
-          setPot(data.payload.pot);
         }
         setCommunityCards(cardsArray);
         setTable(data.payload.table);
@@ -196,7 +192,9 @@ export const Table: Component = () => {
         </div>
       </div>
       <div class="community-cards">
-        {pot() > 0 ? <Chips chips={pot()} /> : null}
+        {table()?.pot > 0
+          ? <Chips chips={table()?.pot} orientation="horizontal" />
+          : null}
         <For each={communityCards()}>
           {(card) => (
             <img
@@ -244,11 +242,15 @@ const Player = ({ player }: { player: PlayerType }) => {
       {true
         ? (
           <div class="player-image-section">
-            <br /> role: {player.role}
-            <img
-              src={`/src/assets/chips/${player.role}.png`}
-              class="button-image"
-            />
+            {player.role
+              ? (
+                <img
+                  src={`/src/assets/chips/${player.role}.png`}
+                  class="button-image"
+                />
+              )
+              : null}
+
             {player.isDealer && (
               <>
                 <img src="/src/assets/chips/dealer.png" class="button-image" />
@@ -309,7 +311,7 @@ const Player = ({ player }: { player: PlayerType }) => {
   );
 };
 
-const Chips = (props) => {
+const Chips = (props: { orientation: string; chips: number }) => {
   const chipsDevisibles = [
     1000000,
     100000,
@@ -325,10 +327,11 @@ const Chips = (props) => {
     10,
     5,
     2,
+    1,
   ];
 
   // console.log("Chips", chips);
-  const orientation = "vertical"; // vertical for bets or horizontal for pot
+  const orientation = props.orientation || "vertical"; // vertical for bets or horizontal for pot
 
   const chipsToRender = (chips: number): number[] => {
     const chipsArray = [];
@@ -344,7 +347,7 @@ const Chips = (props) => {
     }
     return chipsArray;
   };
-  // console.log("chipsArray", chipsArray);
+  console.log("chipsToRender(props.chips)", chipsToRender(props.chips));
   return (
     <div class={`chips ${orientation}`}>
       <For each={chipsToRender(props.chips)}>
@@ -355,7 +358,6 @@ const Chips = (props) => {
           />
         )}
       </For>
-      {props.chips}
     </div>
   );
 };

@@ -51,6 +51,11 @@ section.table {
     margin-bottom: -63%;
   }
 
+  .horizontal.chips {
+    display: flex;
+    align-items: center;
+  }
+
   .chip-image {
     width: 55px;
   }
