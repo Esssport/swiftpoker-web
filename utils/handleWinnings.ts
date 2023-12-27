@@ -50,37 +50,40 @@ export const handleWinnings = (table: Table) => {
     payload: {
       communityCards: table.gameState.hands,
       table,
+      pot: table.pot,
       hands: hands,
       prompt: "Hand over! " + winnerPrompt,
     },
   }, table.id);
 
   //IF goNextRound is true, then go to next round
+  const lastRound = false;
+  if (!lastRound) {
+    table.pot = 0;
+    state.smallBlindPlayed = false;
+    state.bigBlindPlayed = false;
+    state.newGame = true;
+    state.activePosition = 0;
+    state.promptingFor = null;
+    state.highestBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+    state.stage = "preflop";
+    if (table.players.length < table.minPlayers) {
+      state.stage = "waiting";
+      console.log("NOT ENOUGH PLAYERS");
+      return;
+    }
+    state.nextRound = true;
+    state.hands = null;
+    table.firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
 
-  table.pot = 0;
-  state.smallBlindPlayed = false;
-  state.bigBlindPlayed = false;
-  state.newGame = true;
-  state.activePosition = 0;
-  state.promptingFor = null;
-  state.highestBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
-  state.stage = "preflop";
-  if (table.players.length < table.minPlayers) {
-    state.stage = "waiting";
-    console.log("NOT ENOUGH PLAYERS");
+    players.forEach((p) => {
+      p.bets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+      p.folded = false;
+      p.allIn = false;
+      p.hasChecked = false;
+      p.hand = [];
+    });
+    next(table);
     return;
   }
-  state.nextRound = true;
-  state.hands = null;
-  table.firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
-
-  players.forEach((p) => {
-    p.bets = { preflop: 0, flop: 0, turn: 0, river: 0 };
-    p.folded = false;
-    p.allIn = false;
-    p.hasChecked = false;
-    p.hand = [];
-  });
-  next(table);
-  return;
 };

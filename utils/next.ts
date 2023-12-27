@@ -5,10 +5,10 @@ import { populateHands } from "./populateHands.ts";
 import { promptBet } from "./promptBet.ts";
 import { takeAction } from "./takeAction.ts";
 
-let nextCounter = 0;
+// let nextCounter = 0;
 
 export const next = (table: Table) => {
-  nextCounter += 1;
+  // nextCounter += 1;
   const gameState = table.gameState;
   // console.log("NEXT", nextCounter, "position", gameState.activePosition);
   const players = table.players;
@@ -20,18 +20,18 @@ export const next = (table: Table) => {
     handleWinnings(table);
     return;
   }
-  console.log(
-    "NEXT",
-    nextCounter,
-    "position",
-    gameState.activePosition,
-    "player",
-    player?.username,
-    "player.position",
-    player?.position,
-    "stage",
-    stage,
-  );
+  // console.log(
+  //   "NEXT",
+  //   nextCounter,
+  //   "position",
+  //   gameState.activePosition,
+  //   "player",
+  //   player?.username,
+  //   "player.position",
+  //   player?.position,
+  //   "stage",
+  //   stage,
+  // );
   //check for bets to be matched
   if (gameState.activePosition > players.length - 1) {
     const unmatchedBets = players.filter((p) => {
@@ -94,7 +94,10 @@ export const next = (table: Table) => {
   }
 
   player = players.find((p) => p.position === gameState.activePosition);
-
+  if (!player) {
+    console.log("NO PLAYER");
+    return;
+  }
   if (
     player.role === "smallBlind" &&
     !gameState.smallBlindPlayed

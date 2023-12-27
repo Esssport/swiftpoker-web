@@ -6,11 +6,13 @@ import {
 } from "../../../../utils/tableBlueprint.ts";
 import "./Table.scss";
 import { Card } from "../../../../data_types.ts";
+import { Slider } from "../Slider/Slider.tsx";
 const [table, setTable] = createSignal<TableType>();
 const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
 const [hands, setHands] = createSignal<Map<string, Card[]>>(new Map());
 const [communityCards, setCommunityCards] = createSignal([]);
+const [pot, setPot] = createSignal(0);
 let userSocket: WebSocket;
 let userID: string;
 // const getTableData = (tableID) => {
@@ -75,10 +77,11 @@ const joinTable = () => {
       // setPrompts(data.payload.prompt);
     }
     // if (data.payload?.table) setPlayers(data.payload.table.players);
-    console.log("data", data);
+    console.log("payload", data.payload);
     if (!!data.payload?.hands) {
       const handsMap: Map<string, Card[]> = new Map(data.payload.hands);
       setHands(handsMap);
+      // console.log("Hands Set", hands());
     }
     switch (data.event) {
       case "table-updated":
@@ -93,11 +96,12 @@ const joinTable = () => {
         if (communityCards && communityCards.river) {
           cardsArray.push(communityCards.river);
         }
+        if (data.payload.pot) {
+          setPot(data.payload.pot);
+        }
         setCommunityCards(cardsArray);
-
         setTable(data.payload.table);
         // setGameState(data.payload.gameState);
-        console.log("data.payload.waitingFor", data.payload.waitingFor);
         if (data.payload.waitingFor) {
           setActiveUser(data.payload.waitingFor);
         }
@@ -139,8 +143,8 @@ const joinTable = () => {
 
 //TODO: get table info
 //TODO: add a For element and loop over all the players and pass them to <Player /> component
-export const Table: Component = () => {
-  const params = useParams();
+export const Table: Component = ({ test }: { test: string }) => {
+  // const params = useParams();
   // const tableID = params.tableID;
 
   onMount(() => {
@@ -152,16 +156,21 @@ export const Table: Component = () => {
   onCleanup(() => {
     if (userSocket) userSocket.close();
   });
+
+  console.log("pot()", pot());
   return (
     <section class="table">
       <div class="actions-section">
         {actions()?.length > 0
           ? (
-            <input
-              id="betAmount"
-              type="number"
-              value={table()?.blinds.big}
-            />
+            <>
+              <Slider />
+              <input
+                id="betAmount"
+                type="number"
+                value={table()?.blinds.big}
+              />
+            </>
           )
           : null}
         <div class="actions">
@@ -195,26 +204,34 @@ export const Table: Component = () => {
           )
           : null} */
         }
+        <CommunityCards pot={pot()} />
       </section>
-      <div class="community-cards">
-        <For each={communityCards()}>
-          {(card) => (
-            <img
-              class="hand-image"
-              src={`/src/assets/cards/${card[0]}.png`}
-            >
-              {/* //TODO: change this to altText */}
-              {`${card[1].name} of ${card[1].suit}`}
-            </img>
-          )}
-        </For>
-      </div>
     </section>
   );
 };
 
+const CommunityCards = ({ pot }: { pot: number }) => {
+  return (
+    <div class="community-cards">
+      {pot > 0 ? <Chips chips={pot} /> : null}
+      <For each={communityCards()}>
+        {(card) => (
+          <img
+            class="hand-image"
+            src={`/src/assets/cards/${card[0]}.png`}
+          >
+            {/* //TODO: change this to altText */}
+            {`${card[1].name} of ${card[1].suit}`}
+          </img>
+        )}
+      </For>
+    </div>
+  );
+};
+
 const Player = ({ player }: { player: PlayerType }) => {
-  const playerHands = hands()?.get(player.username);
+  const playerHands = hands()?.get(String(player.username));
+  const playerBets = player.bets[table()?.gameState.stage];
   return (
     <div
       classList={{
@@ -226,9 +243,13 @@ const Player = ({ player }: { player: PlayerType }) => {
         ? (
           <div class="player-image-section">
             <br /> role: {player.role}
+            <img
+              src={`/src/assets/chips/${player.role}.png`}
+              class="button-image"
+            />
             {player.isDealer && (
               <>
-                <br />dealer
+                <img src="/src/assets/chips/dealer.png" class="button-image" />
               </>
             )}
             <div class="player-name">{player.username}</div>
@@ -263,7 +284,16 @@ const Player = ({ player }: { player: PlayerType }) => {
                   </>
                 )}
             </div>
-            <div class="player-chips">{player.chips}</div>
+            <div class="player-chips">
+              {/* <img src="/src/assets/chips/chip.png" class="chip-image" /> */}
+              {/* <Chips chips={player.chips} /> */}
+              {player.chips}
+            </div>
+            <div class="player-bet">
+              {playerBets && playerBets > 0
+                ? <Chips chips={playerBets} />
+                : null}
+            </div>
           </div>
         )
         : (
@@ -273,6 +303,52 @@ const Player = ({ player }: { player: PlayerType }) => {
             <div class="player__chips"></div>
           </div>
         )}
+    </div>
+  );
+};
+
+const Chips = ({ chips }: { chips: number }) => {
+  const chipsDevisibles = [
+    1000000,
+    100000,
+    10000,
+    5000,
+    2000,
+    1000,
+    500,
+    200,
+    100,
+    50,
+    20,
+    10,
+    5,
+    2,
+  ];
+  console.log("Chips", chips);
+  const orientation = "vertical"; // vertical for bets or horizontal for pot
+
+  const chipsArray = [];
+  let chipsRemaining = chips;
+  for (let i = 0; i < chipsDevisibles.length; i++) {
+    if (chipsRemaining >= chipsDevisibles[i]) {
+      const quotient = Math.floor(chipsRemaining / chipsDevisibles[i]);
+      chipsRemaining = chipsRemaining % chipsDevisibles[i];
+      for (let j = 0; j < quotient; j++) {
+        chipsArray.push(chipsDevisibles[i]);
+      }
+    }
+  }
+  console.log("chipsArray", chipsArray);
+  return (
+    <div class={`chips ${orientation}`}>
+      <For each={chipsArray}>
+        {(chip) => (
+          <img
+            src={`/src/assets/chips/${chip}.png`}
+            class={`chip-image ${orientation}`}
+          />
+        )}
+      </For>
     </div>
   );
 };

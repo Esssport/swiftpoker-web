@@ -11,7 +11,7 @@ const router = new Router();
 const port = 8080;
 const serverTables = new Map();
 // const allUsers = new Map();
-router.get("/tables/create", handleCreateTables);
+// router.get("/tables/create", handleCreateTables);
 router.get("/tables/join/:tableID", handleJoinTable);
 router.post("/tables/select/", handleTableSelection);
 // router.get("/tables", handleCreateTable);
@@ -43,7 +43,7 @@ app.use(async (ctx, next) => {
 // table listener, probably authenticator
 app.use(async (ctx, next) => {
   ctx.state.tables = serverTables;
-
+  handleCreateTables(ctx);
   //generate initial tables
   await next();
 });

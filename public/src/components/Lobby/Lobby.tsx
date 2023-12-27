@@ -46,7 +46,7 @@ export const Lobby: Component = () => {
   const navigate = useNavigate();
 
   onMount(() => {
-    createTable();
+    // createTable();
   });
 
   createEffect(() => {
@@ -168,18 +168,18 @@ export const Lobby: Component = () => {
 //   console.log("action taken", action);
 // };
 
-const createTable = () => {
-  const request = new Request(
-    `http://localhost:8080/tables/create`,
-    {
-      method: "GET",
-    },
-  );
-  fetch(request).then((response) => {
-    console.log("message", response);
-    response.json().then((data) => {
-      // setTableData(data);
-    });
-  })
-    .catch((err) => console.log(err));
-};
+// const createTable = () => {
+//   const request = new Request(
+//     `http://localhost:8080/tables/create`,
+//     {
+//       method: "GET",
+//     },
+//   );
+//   fetch(request).then((response) => {
+//     console.log("message", response);
+//     response.json().then((data) => {
+//       // setTableData(data);
+//     });
+//   })
+//     .catch((err) => console.log(err));
+// };

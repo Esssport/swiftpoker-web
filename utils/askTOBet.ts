@@ -35,6 +35,7 @@ export const askTOBet = (
     //TODO: make a copy of gameState and remove sensitive info
     gameState,
     chips: player.chips,
+    pot: table.pot,
     prompt: username + " Place your bet",
   };
 

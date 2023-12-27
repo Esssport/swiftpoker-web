@@ -47,6 +47,18 @@ section.table {
     background-color: darkseagreen;
   }
 
+  .vertical.chip-image {
+    margin-bottom: -63%;
+  }
+
+  .chip-image {
+    width: 55px;
+  }
+
+  img.button-image {
+    width: 35px;
+  }
+
 
   .player {
     border: 5px solid white;
@@ -114,6 +126,5 @@ section.table {
 
   .player:nth-child(6) {
     transform: translate(-74vw, -38vh);
-
   }
 }
