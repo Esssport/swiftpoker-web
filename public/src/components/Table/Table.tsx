@@ -1,5 +1,12 @@
-import { Component, createSignal, For, onCleanup, onMount } from "solid-js";
-import { useParams } from "@solidjs/router";
+import {
+  Component,
+  createEffect,
+  createSignal,
+  For,
+  onCleanup,
+  onMount,
+} from "solid-js";
+// import { useParams } from "@solidjs/router";
 import {
   Player as PlayerType,
   Table as TableType,
@@ -143,7 +150,7 @@ const joinTable = () => {
 
 //TODO: get table info
 //TODO: add a For element and loop over all the players and pass them to <Player /> component
-export const Table: Component = ({ test }: { test: string }) => {
+export const Table: Component = () => {
   // const params = useParams();
   // const tableID = params.tableID;
 
@@ -157,7 +164,8 @@ export const Table: Component = ({ test }: { test: string }) => {
     if (userSocket) userSocket.close();
   });
 
-  console.log("pot()", pot());
+  createEffect(() => {
+  });
   return (
     <section class="table">
       <div class="actions-section">
@@ -187,6 +195,20 @@ export const Table: Component = ({ test }: { test: string }) => {
           </For>
         </div>
       </div>
+      <div class="community-cards">
+        {pot() > 0 ? <Chips chips={pot()} /> : null}
+        <For each={communityCards()}>
+          {(card) => (
+            <img
+              class="hand-image"
+              src={`/src/assets/cards/${card[0]}.png`}
+            >
+              {/* //TODO: change this to altText */}
+              {`${card[1].name} of ${card[1].suit}`}
+            </img>
+          )}
+        </For>
+      </div>
       <section class="players">
         <For each={table()?.players}>
           {(player) => <Player player={player} />}
@@ -204,28 +226,8 @@ export const Table: Component = ({ test }: { test: string }) => {
           )
           : null} */
         }
-        <CommunityCards pot={pot()} />
       </section>
     </section>
-  );
-};
-
-const CommunityCards = ({ pot }: { pot: number }) => {
-  return (
-    <div class="community-cards">
-      {pot > 0 ? <Chips chips={pot} /> : null}
-      <For each={communityCards()}>
-        {(card) => (
-          <img
-            class="hand-image"
-            src={`/src/assets/cards/${card[0]}.png`}
-          >
-            {/* //TODO: change this to altText */}
-            {`${card[1].name} of ${card[1].suit}`}
-          </img>
-        )}
-      </For>
-    </div>
   );
 };
 
@@ -307,7 +309,7 @@ const Player = ({ player }: { player: PlayerType }) => {
   );
 };
 
-const Chips = ({ chips }: { chips: number }) => {
+const Chips = (props) => {
   const chipsDevisibles = [
     1000000,
     100000,
@@ -324,24 +326,28 @@ const Chips = ({ chips }: { chips: number }) => {
     5,
     2,
   ];
-  console.log("Chips", chips);
+
+  // console.log("Chips", chips);
   const orientation = "vertical"; // vertical for bets or horizontal for pot
 
-  const chipsArray = [];
-  let chipsRemaining = chips;
-  for (let i = 0; i < chipsDevisibles.length; i++) {
-    if (chipsRemaining >= chipsDevisibles[i]) {
-      const quotient = Math.floor(chipsRemaining / chipsDevisibles[i]);
-      chipsRemaining = chipsRemaining % chipsDevisibles[i];
-      for (let j = 0; j < quotient; j++) {
-        chipsArray.push(chipsDevisibles[i]);
+  const chipsToRender = (chips: number): number[] => {
+    const chipsArray = [];
+    let chipsRemaining = chips;
+    for (let i = 0; i < chipsDevisibles.length; i++) {
+      if (chipsRemaining >= chipsDevisibles[i]) {
+        const quotient = Math.floor(chipsRemaining / chipsDevisibles[i]);
+        chipsRemaining = chipsRemaining % chipsDevisibles[i];
+        for (let j = 0; j < quotient; j++) {
+          chipsArray.push(chipsDevisibles[i]);
+        }
       }
     }
-  }
-  console.log("chipsArray", chipsArray);
+    return chipsArray;
+  };
+  // console.log("chipsArray", chipsArray);
   return (
     <div class={`chips ${orientation}`}>
-      <For each={chipsArray}>
+      <For each={chipsToRender(props.chips)}>
         {(chip) => (
           <img
             src={`/src/assets/chips/${chip}.png`}
@@ -349,6 +355,7 @@ const Chips = ({ chips }: { chips: number }) => {
           />
         )}
       </For>
+      {props.chips}
     </div>
   );
 };
