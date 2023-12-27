@@ -1,0 +1,48 @@
+.SliderRoot {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+    touch-action: none;
+    width: 200px;
+}
+
+.SliderTrack {
+    background-color: hsl(240 6% 90%);
+    position: relative;
+    border-radius: 9999px;
+    height: 8px;
+    width: 100%;
+}
+
+.SliderRange {
+    position: absolute;
+    background-color: hsl(200 98% 39%);
+    border-radius: 9999px;
+    height: 100%;
+}
+
+.SliderThumb {
+    display: block;
+    width: 16px;
+    height: 16px;
+    background-color: hsl(200 98% 39%);
+    border-radius: 9999px;
+    top: -4px;
+}
+
+.SliderThumb:hover {
+    box-shadow: 0 0 0 5px #2a91fe98;
+}
+
+.SliderThumb:focus {
+    outline: none;
+    box-shadow: 0 0 0 5px #2a91fe98;
+}
+
+.SliderLabel {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}

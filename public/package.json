@@ -19,9 +19,8 @@
     "vite-plugin-solid": "^2.7.0"
   },
   "dependencies": {
+    "@kobalte/core": "^0.11.2",
     "@solidjs/router": "^0.10.2",
-    "@zag-js/slider": "^0.31.1",
-    "@zag-js/solid": "^0.31.1",
     "solid-js": "^1.7.6"
   }
 }

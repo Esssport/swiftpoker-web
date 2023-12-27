@@ -13,7 +13,7 @@ import {
 } from "../../../../utils/tableBlueprint.ts";
 import "./Table.scss";
 import { Card } from "../../../../data_types.ts";
-import { Slider } from "../Slider/Slider.tsx";
+import { SliderComponent } from "../Slider/Slider.tsx";
 const [table, setTable] = createSignal<TableType>();
 const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
@@ -168,7 +168,7 @@ export const Table: Component = () => {
         {actions()?.length > 0
           ? (
             <>
-              <Slider />
+              <SliderComponent />
               <input
                 id="betAmount"
                 type="number"
@@ -192,20 +192,22 @@ export const Table: Component = () => {
         </div>
       </div>
       <div class="community-cards">
-        {table()?.pot > 0
-          ? <Chips chips={table()?.pot} orientation="horizontal" />
+        {table()?._potSum > 0
+          ? <Chips chips={table()?._potSum} orientation="horizontal" />
           : null}
-        <For each={communityCards()}>
-          {(card) => (
-            <img
-              class="hand-image"
-              src={`/src/assets/cards/${card[0]}.png`}
-            >
-              {/* //TODO: change this to altText */}
-              {`${card[1].name} of ${card[1].suit}`}
-            </img>
-          )}
-        </For>
+        <div class="community-cards-group">
+          <For each={communityCards()}>
+            {(card) => (
+              <img
+                class="hand-image"
+                src={`/src/assets/cards/${card[0]}.png`}
+              >
+                {/* //TODO: change this to altText */}
+                {`${card[1].name} of ${card[1].suit}`}
+              </img>
+            )}
+          </For>
+        </div>
       </div>
       <section class="players">
         <For each={table()?.players}>
@@ -311,7 +313,7 @@ const Player = ({ player }: { player: PlayerType }) => {
   );
 };
 
-const Chips = (props: { orientation: string; chips: number }) => {
+const Chips = (props: { orientation?: string; chips: number }) => {
   const chipsDevisibles = [
     1000000,
     100000,

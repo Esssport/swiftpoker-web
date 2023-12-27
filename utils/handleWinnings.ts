@@ -50,7 +50,6 @@ export const handleWinnings = (table: Table) => {
     payload: {
       communityCards: table.gameState.hands,
       table,
-      pot: table.pot,
       hands: hands,
       prompt: "Hand over! " + winnerPrompt,
     },

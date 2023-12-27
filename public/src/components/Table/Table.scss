@@ -54,6 +54,7 @@ section.table {
   .horizontal.chips {
     display: flex;
     align-items: center;
+    justify-content: center;
   }
 
   .chip-image {
@@ -83,8 +84,13 @@ section.table {
     z-index: -1;
     position: absolute;
     display: flex;
+    flex-direction: column;
     top: 40%;
     left: 40%;
+  }
+
+  .community-cards-group {
+    display: flex;
   }
 
   // .player-image-section {

@@ -147,6 +147,36 @@ export class Table {
   firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
   pot = 0;
   gameState: GameState;
+  _potSum = 0;
+
+  get potSum() {
+    const stage = this.gameState?.stage;
+    let sum = 0;
+    switch (stage) {
+      case "flop":
+        this.players.forEach((player) => {
+          sum += player.bets.preflop;
+        });
+        break;
+      case "turn":
+        this.players.forEach((player) => {
+          sum += player.bets.preflop + player.bets.flop;
+        });
+        break;
+      case "river":
+        this.players.forEach((player) => {
+          sum += player.bets.preflop + player.bets.flop + player.bets.turn;
+        });
+        break;
+      default:
+        sum = 0;
+    }
+    return sum;
+  }
+
+  set potSum(value) {
+    this._potSum = value;
+  }
 
   dealCards(playerCount: number) {
     console.log("DEALING FOR ", playerCount);

@@ -28,6 +28,7 @@ export const askTOBet = (
   //in showdown when lost [you lost don't show/muck, show]
   //in showdown when won [you won don't show, show]
   // TODO: when somebody all ins, anything that surpluses need to be returned to the user
+  table.potSum = table.potSum;
   const payload = {
     waitingFor: username,
     table,
@@ -35,7 +36,6 @@ export const askTOBet = (
     //TODO: make a copy of gameState and remove sensitive info
     gameState,
     chips: player.chips,
-    pot: table.pot,
     prompt: username + " Place your bet",
   };
 
