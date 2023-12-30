@@ -7,13 +7,12 @@ import {
   onMount,
 } from "solid-js";
 // import { useParams } from "@solidjs/router";
-import {
-  Player as PlayerType,
-  Table as TableType,
-} from "../../../../utils/tableBlueprint.ts";
+import { Table as TableType } from "../../../../utils/tableBlueprint.ts";
 import "./Table.scss";
 import { Card } from "../../../../data_types.ts";
 import { SliderComponent } from "../Slider/Slider.tsx";
+import { Chips } from "./Chips.tsx";
+import { Player } from "./Player.tsx";
 const [table, setTable] = createSignal<TableType>();
 const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
@@ -55,7 +54,7 @@ const joinTable = () => {
   const buyInAmount = localStorage.getItem("buyInAmount");
 
   userID = username;
-  // // localStorage.removeItem("username");
+  // localStorage.removeItem("username");
   // localStorage.removeItem("tableID");
   // localStorage.removeItem("buyInAmount");
 
@@ -214,7 +213,14 @@ export const Table: Component = () => {
       </div>
       <section class="players">
         <For each={table()?.players}>
-          {(player) => <Player player={player} />}
+          {(player) => (
+            <Player
+              hands={hands}
+              player={player}
+              table={table}
+              activeUser={activeUser}
+            />
+          )}
         </For>
 
         {
@@ -231,138 +237,5 @@ export const Table: Component = () => {
         }
       </section>
     </section>
-  );
-};
-
-const Player = ({ player }: { player: PlayerType }) => {
-  const playerHands = hands()?.get(String(player.username));
-  const playerBets = player.bets[table()?.gameState.stage];
-  return (
-    <div
-      classList={{
-        "player": true,
-        active: activeUser() === player.username,
-      }}
-    >
-      {true
-        ? (
-          <div class="player-image-section">
-            {player.role
-              ? (
-                <img
-                  src={`/src/assets/chips/${player.role}.png`}
-                  class="button-image"
-                />
-              )
-              : null}
-
-            {player.isDealer && (
-              <>
-                <img src="/src/assets/chips/dealer.png" class="button-image" />
-              </>
-            )}
-            <div class="player-name">{player.username}</div>
-            <div classList={{ "player-hand": true, "folded": player.folded }}>
-              {playerHands
-                ? (
-                  <For each={playerHands}>
-                    {(card) => (
-                      <img
-                        class="hand-image"
-                        src={`/src/assets/cards/${card[0]}.png`}
-                      >
-                        {`${card[1].name} of ${card[1].suit}`}
-                      </img>
-                    )}
-                  </For>
-                )
-                : (
-                  <>
-                    <img
-                      class="hand-image"
-                      src={`/src/assets/cards/hand.png`}
-                    >
-                      hidden cards
-                    </img>
-                    <img
-                      class="hand-image"
-                      src={`/src/assets/cards/hand.png`}
-                    >
-                      hidden cards
-                    </img>
-                  </>
-                )}
-            </div>
-            <div class="player-chips">
-              {/* <img src="/src/assets/chips/chip.png" class="chip-image" /> */}
-              {/* <Chips chips={player.chips} /> */}
-              {player.chips}
-            </div>
-            <div class="player-bet">
-              {playerBets && playerBets > 0
-                ? <Chips chips={playerBets} />
-                : null}
-            </div>
-          </div>
-        )
-        : (
-          <div class="player-image-section">
-            <div class="player__name"></div>
-            <div class="player__hand"></div>
-            <div class="player__chips"></div>
-          </div>
-        )}
-    </div>
-  );
-};
-
-const Chips = (props: { orientation?: string; chips: number }) => {
-  const chipsDevisibles = [
-    1000000,
-    100000,
-    10000,
-    5000,
-    2000,
-    1000,
-    500,
-    200,
-    100,
-    50,
-    20,
-    10,
-    5,
-    2,
-    1,
-  ];
-
-  // console.log("Chips", chips);
-  const orientation = props.orientation || "vertical"; // vertical for bets or horizontal for pot
-
-  const chipsToRender = (chips: number): number[] => {
-    const chipsArray = [];
-    let chipsRemaining = chips;
-    for (let i = 0; i < chipsDevisibles.length; i++) {
-      if (chipsRemaining >= chipsDevisibles[i]) {
-        const quotient = Math.floor(chipsRemaining / chipsDevisibles[i]);
-        chipsRemaining = chipsRemaining % chipsDevisibles[i];
-        for (let j = 0; j < quotient; j++) {
-          chipsArray.push(chipsDevisibles[i]);
-        }
-      }
-    }
-    return chipsArray;
-  };
-  // console.log("chipsToRender(props.chips)", chipsToRender(props.chips));
-  return (
-    <div class={`chips ${orientation}`}>
-      <For each={chipsToRender(props.chips)}>
-        {(chip) => (
-          <img
-            src={`/src/assets/chips/${chip}.png`}
-            class={`chip-image ${orientation}`}
-          />
-        )}
-      </For>
-    </div>
   );
 };
