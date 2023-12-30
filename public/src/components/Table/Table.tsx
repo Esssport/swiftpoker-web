@@ -13,6 +13,7 @@ import { Card } from "../../../../data_types.ts";
 import { SliderComponent } from "../Slider/Slider.tsx";
 import { Chips } from "./Chips.tsx";
 import { Player } from "./Player.tsx";
+import { TextComponent } from "../TextField/TextField.tsx";
 const [table, setTable] = createSignal<TableType>();
 const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
@@ -20,6 +21,8 @@ const [hands, setHands] = createSignal<Map<string, Card[]>>(new Map());
 const [communityCards, setCommunityCards] = createSignal([]);
 const [maxBetAllowed, setMaxBetAllowed] = createSignal(0);
 const [betValue, setBetValue] = createSignal(0);
+const [callAmount, setCallAmount] = createSignal(0);
+const [raiseAmount, setRaiseAmount] = createSignal(0);
 let userSocket: WebSocket;
 let userID: string;
 // const getTableData = (tableID) => {
@@ -101,8 +104,11 @@ const joinTable = () => {
         setCommunityCards(cardsArray);
         setTable(data.payload.table);
         setBetValue(data.payload.table.blinds.big);
+
         if (data.payload?.actionOptions) {
           setMaxBetAllowed(data.payload.actionOptions.maxBetAllowed);
+          setCallAmount(data.payload.actionOptions.callAmount);
+          setRaiseAmount(data.payload.actionOptions.raiseAmount);
         }
         // setGameState(data.payload.gameState);
         if (data.payload.waitingFor) {
@@ -167,14 +173,17 @@ export const Table: Component = () => {
           ? (
             <>
               <SliderComponent
-                minValue={table()?.blinds.big}
+                minValue={Math.max(table()?.blinds.big, callAmount())}
                 maxValue={maxBetAllowed()}
                 setBetValue={setBetValue}
+                bigBlind={table()?.blinds.big}
+                value={betValue}
               />
-              <input
-                id="betAmount"
-                type="number"
-                value={betValue()}
+              <TextComponent
+                // Label="Bet Amount"
+                value={Math.max(betValue(), callAmount())}
+                onChange={setBetValue}
+                maxValue={maxBetAllowed()}
               />
             </>
           )
@@ -186,8 +195,18 @@ export const Table: Component = () => {
               <button
                 class="bg-blue hover:bg-gray-100 text-gray-700 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
                 onClick={takeAction(action)}
+                // todo: Add "bet" action too
               >
                 {action}
+                <br />
+                {`
+                ${action === "call" ? callAmount() : ""}
+                ${
+                  action === "raise" || action === "bet"
+                    ? Math.max(raiseAmount(), betValue())
+                    : ""
+                }
+                `}
               </button>
             )}
           </For>

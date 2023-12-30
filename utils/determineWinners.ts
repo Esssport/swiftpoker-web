@@ -26,7 +26,7 @@ export const determineWinners = (results: Result[]): Result[] => {
     }
 
     if (prevPlayer.score === currentPlayer.score) {
-      for (let i = 0; i < prevPlayer.cards.length; i++) {
+      for (let i = 0; i < prevPlayer.cards?.length; i++) {
         const card = prevPlayer.cards[i];
 
         const cardObj = card[1];
