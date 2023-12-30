@@ -32,11 +32,11 @@ export const handleJoinTable = async (ctx) => {
       return;
     }
 
-    if (currentTable.players.find((player) => player.username === username)) {
-      socket.close(1008, `CONNECTION CLOSED, Username already in table`);
-      console.log("CONNECTION CLOSED, Username already in table");
-      return;
-    }
+    // if (currentTable.players.find((player) => player.username === username)) {
+    //   socket.close(1008, `CONNECTION CLOSED, Username already in table`);
+    //   console.log("CONNECTION CLOSED, Username already in table");
+    //   return;
+    // }
     if (currentTable.players.length >= currentTable.maxPlayers) {
       socket.close(1008, `CONNECTION CLOSED, Table is full`);
       console.log("CONNECTION CLOSED, Table is full");

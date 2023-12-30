@@ -1,14 +1,32 @@
 import { Slider } from "@kobalte/core";
+import { createSignal } from "solid-js";
 import "./Slider.scss";
-export function SliderComponent() {
+export function SliderComponent(props) {
+  const [betValue, setBetValue] = createSignal<number[]>([props.minValue]);
+
+  const setSliderValue = (value) => {
+    let newValue;
+    if (value[0] > betValue()[0]) {
+      newValue = betValue()[0] + props.minValue;
+      setBetValue([newValue]);
+    } else if (value[0] < betValue()[0]) {
+      newValue = betValue()[0] - props.minValue;
+      setBetValue([newValue]);
+    } else {
+      newValue = betValue()[0];
+    }
+    props.setBetValue(newValue);
+  };
+
   return (
     <Slider.Root
       class="SliderRoot"
-      minValue={100}
-      maxValue={2000}
-      // defaultValue={[20, 500]}
-      step={20}
+      minValue={Number(props.minValue)}
+      maxValue={Number(props.maxValue)}
+      step={props.minValue}
       getValueLabel={(params) => `$${params.values[0]}`}
+      value={betValue()}
+      onChange={setSliderValue}
     >
       <div class="SliderLabel">
         <Slider.Label>Money</Slider.Label>

@@ -19,6 +19,8 @@ const [actions, setActions] = createSignal([]);
 const [activeUser, setActiveUser] = createSignal("");
 const [hands, setHands] = createSignal<Map<string, Card[]>>(new Map());
 const [communityCards, setCommunityCards] = createSignal([]);
+const [maxBetAllowed, setMaxBetAllowed] = createSignal(0);
+const [betValue, setBetValue] = createSignal(0);
 let userSocket: WebSocket;
 let userID: string;
 // const getTableData = (tableID) => {
@@ -35,12 +37,7 @@ let userID: string;
 // };
 
 const takeAction = (action: string) => () => {
-  const betAmount = document.getElementById(
-    "betAmount",
-  ) as HTMLInputElement;
-  const finalBetAmount = !!betAmount.value
-    ? +betAmount.value
-    : table().blinds.big;
+  const finalBetAmount = betValue() || table()?.blinds.big;
   userSocket.send(
     JSON.stringify({
       event: "action-taken",
@@ -104,6 +101,10 @@ const joinTable = () => {
         }
         setCommunityCards(cardsArray);
         setTable(data.payload.table);
+        setBetValue(data.payload.table.blinds.big);
+        if (data.payload?.actionOptions) {
+          setMaxBetAllowed(data.payload.actionOptions.maxBetAllowed);
+        }
         // setGameState(data.payload.gameState);
         if (data.payload.waitingFor) {
           setActiveUser(data.payload.waitingFor);
@@ -160,19 +161,21 @@ export const Table: Component = () => {
     if (userSocket) userSocket.close();
   });
 
-  createEffect(() => {
-  });
   return (
     <section class="table">
       <div class="actions-section">
         {actions()?.length > 0
           ? (
             <>
-              <SliderComponent />
+              <SliderComponent
+                minValue={table()?.blinds.big}
+                maxValue={maxBetAllowed()}
+                setBetValue={setBetValue}
+              />
               <input
                 id="betAmount"
                 type="number"
-                value={table()?.blinds.big}
+                value={betValue()}
               />
             </>
           )
@@ -349,7 +352,7 @@ const Chips = (props: { orientation?: string; chips: number }) => {
     }
     return chipsArray;
   };
-  console.log("chipsToRender(props.chips)", chipsToRender(props.chips));
+  // console.log("chipsToRender(props.chips)", chipsToRender(props.chips));
   return (
     <div class={`chips ${orientation}`}>
       <For each={chipsToRender(props.chips)}>

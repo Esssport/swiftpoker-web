@@ -1,5 +1,5 @@
 import { send } from "../api/broadcast.ts";
-import { Table } from "../utils/tableBlueprint.ts";
+import { ActionOptions, Table } from "../utils/tableBlueprint.ts";
 
 export const askTOBet = (
   table: Table,
@@ -11,12 +11,19 @@ export const askTOBet = (
   const gameState = table.gameState;
   const stage = gameState.stage;
   let actions = [];
+  let actionOptions = new ActionOptions("raise", 0, player.chips);
   if (table.firstBets[stage] === 0) {
     actions = ["check", "bet"];
   } else if (
     player.chips + player.bets[stage] >= gameState.highestBets[stage]
   ) {
     actions = ["fold", "call", "raise"];
+    actionOptions.callAmount = gameState.highestBets[stage];
+    const minRaise = Math.max(
+      gameState.highestBets[stage] + table.blinds.big,
+      table.firstBets[stage] * 2,
+    );
+    actionOptions.raiseAmount = minRaise;
   } else {
     actions = ["fold", "call"];
   }
@@ -32,6 +39,7 @@ export const askTOBet = (
   const payload = {
     waitingFor: username,
     table,
+    actionOptions,
     communityCards: table.gameState.hands,
     //TODO: make a copy of gameState and remove sensitive info
     gameState,

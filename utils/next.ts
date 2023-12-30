@@ -1,4 +1,4 @@
-import { Player, Table } from "./tableBlueprint.ts";
+import { Table } from "./tableBlueprint.ts";
 import { determinePositions } from "./determinePositions.ts";
 import { handleWinnings } from "./handleWinnings.ts";
 import { populateHands } from "./populateHands.ts";

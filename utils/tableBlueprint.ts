@@ -14,6 +14,21 @@ export interface TableConfig {
   buyInAmount?: number;
 }
 
+export class ActionOptions {
+  type: string;
+  amount: number;
+  maxBetAllowed: number;
+  callAmount: number;
+  raiseAmount: number;
+  constructor(type: string, amount: number, maxBetAllowed: number) {
+    this.type = type;
+    this.maxBetAllowed = maxBetAllowed;
+    this.amount = amount;
+    this.callAmount = 0;
+    this.raiseAmount = 0;
+  }
+}
+
 export interface PlayerInterface {
   username: string;
   socket?: WebSocket;

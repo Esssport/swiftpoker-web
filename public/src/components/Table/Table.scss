@@ -115,15 +115,15 @@ section.table {
 
   /* Rotate each player around the table */
   .player:nth-child(1) {
-    transform: translate(-15vw, -38vh);
+    transform: translate(-15vw, -58vh);
   }
 
   .player:nth-child(2) {
-    transform: translate(-15vw, -63vh);
+    transform: translate(-15vw, -83vh);
   }
 
   .player:nth-child(3) {
-    transform: translate(-15vw, -91vh);
+    transform: translate(-15vw, -111vh);
 
   }
 
