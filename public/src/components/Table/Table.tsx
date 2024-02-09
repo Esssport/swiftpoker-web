@@ -129,6 +129,9 @@ const joinTable = () => {
           //TODO
         }
         break;
+      case "clear-prompt":
+        setActions([]);
+        break;
       case "hands-updated":
         break;
     }

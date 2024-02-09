@@ -2,9 +2,18 @@ import { placeBet } from "./placeBet.ts";
 import { next } from "./next.ts";
 import { askTOBet } from "./askTOBet.ts";
 import { BetInput } from "../data_types.ts";
+import { send } from "../api/broadcast.ts";
 
 export const takeAction = (input: BetInput) => {
+  //send an empty message to player to clear the prompt
   const { table, player, action, betAmount, stage } = input;
+  const message = { event: "clear-prompt", payload: "" };
+  // const actionsPrompt = {
+  //   event: "table-updated",
+  //   payload,
+  //   secondaryActions,
+  // };
+  send(player.socket, message);
 
   const isAllIn = betAmount >= player.chips;
   const bet = isAllIn ? player.chips : betAmount;
