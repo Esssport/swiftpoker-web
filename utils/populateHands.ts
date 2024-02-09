@@ -4,6 +4,7 @@ export const populateHands = (
   table: Table,
   stage: string = null,
 ) => {
+  console.log("populating hands for", stage);
   const players = table.players;
   let gameState = table.gameState;
   let tableHands = gameState.hands;

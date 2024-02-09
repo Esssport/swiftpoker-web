@@ -1,13 +1,15 @@
 import { Table } from "./tableBlueprint.ts";
 import { determinePositions } from "./determinePositions.ts";
-import { handleWinnings } from "./handleWinnings.ts";
+import { goNextRound, handleWinnings } from "./handleWinnings.ts";
 import { populateHands } from "./populateHands.ts";
 import { promptBet } from "./promptBet.ts";
 import { takeAction } from "./takeAction.ts";
 
 // let nextCounter = 0;
+const waitTime = 2000;
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-export const next = (table: Table) => {
+export const next = async (table: Table) => {
   // nextCounter += 1;
   const gameState = table.gameState;
   // console.log("NEXT", nextCounter, "position", gameState.activePosition);
@@ -70,7 +72,7 @@ export const next = (table: Table) => {
       handleWinnings(table);
       return;
     }
-
+    await delay(waitTime);
     populateHands(table, gameState.stage);
     next(table);
     return;
@@ -96,7 +98,9 @@ export const next = (table: Table) => {
   player = players.find((p) => p.position === gameState.activePosition);
   if (!player) {
     console.log("NO PLAYER");
-    return;
+    // set the table ready for the next round
+    goNextRound(table);
+    // return;
   }
   if (
     player.role === "smallBlind" &&

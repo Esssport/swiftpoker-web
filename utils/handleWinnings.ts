@@ -58,31 +58,37 @@ export const handleWinnings = (table: Table) => {
   //IF goNextRound is true, then go to next round
   const lastRound = false;
   if (!lastRound) {
-    table.pot = 0;
-    state.smallBlindPlayed = false;
-    state.bigBlindPlayed = false;
-    state.newGame = true;
-    state.activePosition = 0;
-    state.promptingFor = null;
-    state.highestBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
-    state.stage = "preflop";
-    if (table.players.length < table.minPlayers) {
-      state.stage = "waiting";
-      console.log("NOT ENOUGH PLAYERS");
-      return;
-    }
-    state.nextRound = true;
-    state.hands = null;
-    table.firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
-
-    players.forEach((p) => {
-      p.bets = { preflop: 0, flop: 0, turn: 0, river: 0 };
-      p.folded = false;
-      p.allIn = false;
-      p.hasChecked = false;
-      p.hand = [];
-    });
-    next(table);
-    return;
+    goNextRound(table);
   }
+};
+
+export const goNextRound = (table: Table) => {
+  const state = table.gameState;
+  const players = table.players;
+  table.pot = 0;
+  state.smallBlindPlayed = false;
+  state.bigBlindPlayed = false;
+  state.newGame = true;
+  state.activePosition = 0;
+  state.promptingFor = null;
+  state.highestBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+  state.stage = "preflop";
+  state.nextRound = true;
+  state.hands = null;
+  table.firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+
+  players.forEach((p) => {
+    p.bets = { preflop: 0, flop: 0, turn: 0, river: 0 };
+    p.folded = false;
+    p.allIn = false;
+    p.hasChecked = false;
+    p.hand = [];
+  });
+  if (table.players.length < table.minPlayers) {
+    state.stage = "waiting";
+    console.log("NOT ENOUGH PLAYERS");
+  } else {
+    next(table);
+  }
+  return;
 };

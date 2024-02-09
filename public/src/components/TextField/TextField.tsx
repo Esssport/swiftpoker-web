@@ -15,7 +15,7 @@ export function TextComponent(props) {
       <TextField.Label class="text-field__label">
         {props.Label}
       </TextField.Label>
-      <TextField.Input class="text-field__input" />
+      <TextField.Input value={props.value} class="text-field__input" />
     </TextField.Root>
   );
 }
