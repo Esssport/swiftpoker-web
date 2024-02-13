@@ -82,7 +82,7 @@ const joinTable = () => {
       // setPrompts(data.payload.prompt);
     }
     // if (data.payload?.table) setPlayers(data.payload.table.players);
-    console.log("payload", data.payload);
+    // console.log("payload", data.payload);
     if (!!data.payload?.hands) {
       const handsMap: Map<string, Card[]> = new Map(data.payload.hands);
       setHands(handsMap);
@@ -100,6 +100,12 @@ const joinTable = () => {
         }
         if (communityCards && communityCards.river) {
           cardsArray.push(communityCards.river);
+        }
+        if (data.payload.allHands) {
+          const allHandsMap: Map<string, Card[]> = new Map(
+            data.payload.allHands,
+          );
+          setHands(allHandsMap);
         }
         setCommunityCards(cardsArray);
         setTable(data.payload.table);

@@ -6,8 +6,7 @@ import { promptBet } from "./promptBet.ts";
 import { takeAction } from "./takeAction.ts";
 
 // let nextCounter = 0;
-const waitTime = 2000;
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+export const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 export const next = async (table: Table) => {
   // nextCounter += 1;
@@ -72,7 +71,7 @@ export const next = async (table: Table) => {
       handleWinnings(table);
       return;
     }
-    await delay(waitTime);
+    await delay(2000);
     populateHands(table, gameState.stage);
     next(table);
     return;

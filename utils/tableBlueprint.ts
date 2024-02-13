@@ -213,7 +213,9 @@ export class Table {
     const hands = new Map();
     this.players.forEach((player) => {
       //TODO: filter out people who chose not to show their hands
-      hands.set(player.username, player.hand);
+      if (!player.folded) {
+        hands.set(player.username, player.hand);
+      }
     });
     return Array.from(hands);
   }

@@ -2,9 +2,9 @@ import { broadcast } from "../api/broadcast.ts";
 import { Table } from "../utils/tableBlueprint.ts";
 import { determineHandValues } from "./determineHandValues.ts";
 import { determineWinners } from "./determineWinners.ts";
-import { next } from "./next.ts";
+import { delay, next } from "./next.ts";
 
-export const handleWinnings = (table: Table) => {
+export const handleWinnings = async (table: Table) => {
   const state = table.gameState;
   const players = table.players;
   //TODO: call this determineHandValues after every stage to let users know their hand value
@@ -33,9 +33,9 @@ export const handleWinnings = (table: Table) => {
   state.winners = winners;
   let winnerPrompt = "";
   //TODO: handle case where there is a tie or somebody folds
-  const hands = [];
+  let allHands = [];
   if (remainingPlayers.length > 1) {
-    hands.push(table.allHands);
+    allHands = table.allHands;
     winnerPrompt = `${winners[0].username} won ${table.pot} chips with ${
       winners[0].handName
     }`;
@@ -50,14 +50,16 @@ export const handleWinnings = (table: Table) => {
     payload: {
       communityCards: table.gameState.hands,
       table,
-      hands: hands,
+      allHands,
       prompt: "Hand over! " + winnerPrompt,
     },
   }, table.id);
 
   //IF goNextRound is true, then go to next round
   const lastRound = false;
-  if (!lastRound) {
+  await delay(3000);
+
+  if (false && !lastRound) {
     goNextRound(table);
   }
 };
