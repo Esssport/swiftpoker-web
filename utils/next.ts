@@ -99,7 +99,7 @@ export const next = async (table: Table) => {
     console.log("NO PLAYER");
     // set the table ready for the next round
     goNextRound(table);
-    // return;
+    return;
   }
   if (
     player.role === "smallBlind" &&

@@ -12,6 +12,12 @@ export const askTOBet = (
   const stage = gameState.stage;
   let actions = [];
   let actionOptions = new ActionOptions("raise", 0, player.chips);
+
+  // handle cases where player is all in
+  if (player.chips === 0) {
+    player.isAllIn = true;
+  }
+
   if (table.firstBets[stage] === 0) {
     actions = ["check", "bet"];
   } else if (
@@ -23,10 +29,20 @@ export const askTOBet = (
       gameState.highestBets[stage] + table.blinds.big,
       table.firstBets[stage] * 2,
     );
-    actionOptions.raiseAmount = minRaise;
+    actionOptions.raiseAmount = Math.min(minRaise, actionOptions.maxBetAllowed);
+    // if (minRaise > player.chips + player.bets[stage]) {
+    //   actionOptions.raiseAmount = player.chips + player.bets[stage];
+    // }
   } else {
     actions = ["fold", "call"];
   }
+  // if (player.isAllIn) {
+  //   actionOptions.amount = 0;
+  //   actionOptions.maxBetAllowed = 0;
+  //   actionOptions.raiseAmount = 0;
+  //   actionOptions.callAmount = 0;
+  //   actionOptions.isAllIn = true;
+  // }
   //overriding big blind in preflop since they can only check or raise
   if (optionalActions) actions = optionalActions;
 

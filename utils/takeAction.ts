@@ -25,7 +25,7 @@ export const takeAction = (input: BetInput) => {
   const isValidBet = bet >= table.blinds.big;
 
   if (isAllIn) {
-    player.allIn = true;
+    player.isAllIn = true;
   }
 
   if (!isAllIn && !isBlind && !isValidBet && !isValidRaise) {
@@ -35,6 +35,11 @@ export const takeAction = (input: BetInput) => {
     console.log("TRY AGAIN");
     return;
   }
+
+  //TODO: potentially add a new action called "all-in"
+  // if (player.isAllIn) {
+  //   action = "check";
+  // }
 
   if (action === "call") {
     const betAmount = gameState.highestBets[stage];

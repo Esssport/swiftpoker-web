@@ -82,7 +82,7 @@ export const goNextRound = (table: Table) => {
   players.forEach((p) => {
     p.bets = { preflop: 0, flop: 0, turn: 0, river: 0 };
     p.folded = false;
-    p.allIn = false;
+    p.isAllIn = false;
     p.hasChecked = false;
     p.hand = [];
   });

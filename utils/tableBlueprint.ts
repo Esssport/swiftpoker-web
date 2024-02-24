@@ -20,12 +20,14 @@ export class ActionOptions {
   maxBetAllowed: number;
   callAmount: number;
   raiseAmount: number;
+  isAllIn: boolean;
   constructor(type: string, amount: number, maxBetAllowed: number) {
     this.type = type;
     this.maxBetAllowed = maxBetAllowed;
     this.amount = amount;
     this.callAmount = 0;
     this.raiseAmount = 0;
+    this.isAllIn = false;
   }
 }
 
@@ -44,7 +46,7 @@ export class Player {
   bets: { preflop: number; flop: number; turn: number; river: number };
   private _hand: Card[];
   folded: boolean = true;
-  allIn: boolean;
+  isAllIn: boolean;
   hasChecked: boolean;
 
   public set hand(cards: Card[]) {

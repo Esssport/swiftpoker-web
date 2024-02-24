@@ -22,6 +22,7 @@ const joinSimilarTable = () => {
   const request = new Request(
     `http://localhost:8080/tables/select/`,
     {
+      //TODO: enforce the table limits here
       method: "POST",
       body: JSON.stringify({
         buyInRange: { min: 4000, max: 10000 },

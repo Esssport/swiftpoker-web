@@ -39,14 +39,16 @@ let userID: string;
 // };
 
 const takeAction = (action: string) => () => {
-  const finalBetAmount = betValue() || table()?.blinds.big;
+  const bet = action === "raise" || action === "bet"
+    ? Math.max(raiseAmount(), betValue())
+    : callAmount();
   userSocket.send(
     JSON.stringify({
       event: "action-taken",
-      payload: { betAmount: finalBetAmount, action },
+      payload: { userID, betAmount: bet, action },
     }),
   );
-  console.log("action taken", action);
+  console.log("action taken", action, bet);
 };
 
 //TODO: Add cards and other information into localStorage if necessary to continue showing them if browser is refreshed

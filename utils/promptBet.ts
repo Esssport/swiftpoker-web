@@ -8,7 +8,6 @@ export const promptBet = (table: Table, username: string) => {
   //TODO: Prompt any user who has not folded or isn't equal to the highest bet
   const players = table.players;
   // const player = players.find((p) => p.position === gameState.activePosition);
-  const player = players.find((p) => p.username === username);
 
   gameState.promptingFor = username;
   console.log("prompting", username);
