@@ -11,7 +11,11 @@ export const askTOBet = (
   const gameState = table.gameState;
   const stage = gameState.stage;
   let actions = [];
-  let actionOptions = new ActionOptions("raise", 0, player.chips);
+  let actionOptions = new ActionOptions(
+    "raise",
+    0,
+    player.chips + player.bets[stage],
+  );
 
   // handle cases where player is all in
   if (player.chips === 0) {

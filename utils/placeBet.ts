@@ -10,6 +10,7 @@ export const placeBet = (
 ) => {
   const stage = gameState.stage;
   const deficitAmount = bet - player.bets[stage];
+  // const deficitAmount = bet;
   player.bets[stage] = bet;
   player.chips -= deficitAmount;
   table.pot += deficitAmount;

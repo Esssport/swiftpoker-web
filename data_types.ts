@@ -94,6 +94,6 @@ export interface BetInput {
   table: Table;
   player: Player;
   action?: string;
-  betAmount: number;
+  betAmount?: number;
   stage: string;
 }

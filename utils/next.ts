@@ -4,6 +4,7 @@ import { goNextRound, handleWinnings } from "./handleWinnings.ts";
 import { populateHands } from "./populateHands.ts";
 import { promptBet } from "./promptBet.ts";
 import { takeAction } from "./takeAction.ts";
+import { broadcast } from "../api/broadcast.ts";
 
 // let nextCounter = 0;
 export const delay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -73,6 +74,13 @@ export const next = async (table: Table) => {
     }
     await delay(2000);
     populateHands(table, gameState.stage);
+    const message = {
+      event: "cards-updated",
+      payload: {
+        communityCards: table.gameState.hands,
+      },
+    };
+    broadcast(message, table.id);
     next(table);
     return;
   }
@@ -87,6 +95,13 @@ export const next = async (table: Table) => {
   }
 
   if (gameState.newGame) {
+    const playersWithChips = players.filter((p) => p.chips > 0);
+    if (playersWithChips.length < 2) {
+      table.isLastRound = true;
+      console.log("GAME OVER");
+      gameState.stage = "waiting";
+      return;
+    }
     determinePositions(table);
     populateHands(table);
     players.forEach((p) => {
@@ -134,12 +149,33 @@ export const next = async (table: Table) => {
     //probably needs to be players.length - 1
     gameState.activePosition <= players.length
   ) {
-    promptBet(
-      table,
-      //TODO: change back to player.username
-      players.find((p) => p.position === gameState.activePosition).username,
-    );
-    return;
+    const allInPlayers = players.filter((p) => p.isAllIn);
+    // if player is all in, move to the next player
+    if (player.isAllIn) {
+      console.log("ALLIN", player.isAllIn, player.username);
+      gameState.activePosition += 1;
+      next(table);
+      return;
+    } else {
+      if (
+        //if all players are all in, and the current player's bet is equal to the highest bet
+        allInPlayers.length > 0 && allInPlayers.length >= players.length - 1 &&
+        player.bets[stage] === gameState.highestBets[stage]
+      ) {
+        takeAction({
+          table,
+          player,
+          stage,
+          action: "check",
+        });
+      } else {
+        promptBet(
+          table,
+          //TODO: change back to player.username
+          players.find((p) => p.position === gameState.activePosition).username,
+        );
+      }
+    }
   }
   return;
 };

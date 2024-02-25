@@ -46,7 +46,7 @@ export class Player {
   bets: { preflop: number; flop: number; turn: number; river: number };
   private _hand: Card[];
   folded: boolean = true;
-  isAllIn: boolean;
+  isAllIn: boolean = false;
   hasChecked: boolean;
 
   public set hand(cards: Card[]) {
@@ -157,6 +157,7 @@ export class Table {
   minPlayers: number;
   type: string;
   id: number;
+  isLastRound: boolean = false;
   players: Player[] = [];
   waitingList = [];
   sitOutPlayers = [];

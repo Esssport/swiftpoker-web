@@ -1,5 +1,5 @@
 import { broadcast } from "../api/broadcast.ts";
-import { Table } from "../utils/tableBlueprint.ts";
+import { GameState, Table } from "../utils/tableBlueprint.ts";
 import { determineHandValues } from "./determineHandValues.ts";
 import { determineWinners } from "./determineWinners.ts";
 import { delay, next } from "./next.ts";
@@ -56,11 +56,14 @@ export const handleWinnings = async (table: Table) => {
   }, table.id);
 
   //IF goNextRound is true, then go to next round
-  const lastRound = false;
   await delay(3000);
 
-  if (false && !lastRound) {
+  if (!table.isLastRound) {
     goNextRound(table);
+  } else {
+    console.log("Handled winnings, but not going to next round.");
+    console.log("GAME OVER");
+    state.stage = "waiting";
   }
 };
 

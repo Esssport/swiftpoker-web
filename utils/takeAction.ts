@@ -7,6 +7,7 @@ import { send } from "../api/broadcast.ts";
 export const takeAction = (input: BetInput) => {
   //send an empty message to player to clear the prompt
   const { table, player, action, betAmount, stage } = input;
+  console.log("BETAMOUNT", betAmount);
   const message = { event: "clear-prompt", payload: "" };
   // const actionsPrompt = {
   //   event: "table-updated",

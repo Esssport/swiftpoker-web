@@ -91,7 +91,7 @@ const joinTable = () => {
       // console.log("Hands Set", hands());
     }
     switch (data.event) {
-      case "table-updated":
+      case "cards-updated":
         const cardsArray = [];
         const communityCards = data.payload.communityCards;
         if (communityCards && communityCards.flop?.length === 3) {
@@ -103,13 +103,16 @@ const joinTable = () => {
         if (communityCards && communityCards.river) {
           cardsArray.push(communityCards.river);
         }
+        setCommunityCards(cardsArray);
+        break;
+        break;
+      case "table-updated":
         if (data.payload.allHands) {
           const allHandsMap: Map<string, Card[]> = new Map(
             data.payload.allHands,
           );
           setHands(allHandsMap);
         }
-        setCommunityCards(cardsArray);
         setTable(data.payload.table);
         setBetValue(data.payload.table.blinds.big);
 
