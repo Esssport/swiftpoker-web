@@ -64,6 +64,7 @@ export const handleWinnings = async (table: Table) => {
     console.log("Handled winnings, but not going to next round.");
     console.log("GAME OVER");
     state.stage = "waiting";
+    table.isLastRound = false;
   }
 };
 

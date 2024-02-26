@@ -39,6 +39,7 @@ section.table {
   }
 
   .actions-section {
+    z-index: 5;
     position: absolute;
     display: flex;
     flex-direction: column;
@@ -63,6 +64,7 @@ section.table {
 
   img.button-image {
     width: 35px;
+    display: inline-block;
   }
 
 
@@ -93,10 +95,15 @@ section.table {
     display: flex;
   }
 
-  // .player-image-section {
-  // padding: 35%;
-  // border-radius: 10%;
-  // }
+  .player-bet {
+    transform: translate(-71px, -81px);
+  }
+
+  .player-image-section {
+    width: 148px;
+    // padding: 35%;
+    // border-radius: 10%;
+  }
 
   .player-hand {
     display: flex;

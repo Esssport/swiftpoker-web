@@ -17,7 +17,15 @@ export const takeAction = (input: BetInput) => {
   send(player.socket, message);
 
   const isAllIn = betAmount >= player.chips;
-  const bet = isAllIn ? player.chips : betAmount;
+  console.log(
+    "isAllIn",
+    isAllIn,
+    "player.chips",
+    player.chips,
+    "player.bets[stage]",
+    player.bets[stage],
+  );
+  const bet = isAllIn ? player.chips + player.bets[stage] : betAmount;
 
   const gameState = table.gameState;
   const isBlind = player.role === "smallBlind" || player.role === "bigBlind";
@@ -43,12 +51,13 @@ export const takeAction = (input: BetInput) => {
   // }
 
   if (action === "call") {
-    const betAmount = gameState.highestBets[stage];
-    placeBet(table, player, betAmount, gameState);
+    const bet = gameState.highestBets[stage];
+    placeBet(table, player, bet, gameState);
     return;
   }
 
   // available actions ["check", "bet", "fold", "call", "raise"];
+  //TODO: handle all-in cases
   if (action === "raise") {
     const minRaise = Math.max(
       gameState.highestBets[stage] + table.blinds.big,

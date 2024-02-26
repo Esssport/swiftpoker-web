@@ -248,6 +248,7 @@ export class Table {
   }
 
   public startGame() {
+    this.isLastRound = false;
     //handle case where a user joins a table that is already in progress
     //handle case where a user leaves a table that is in progress
     //handle case where a user leaves and re-joins a table that is in progress

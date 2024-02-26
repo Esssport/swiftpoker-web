@@ -28,6 +28,11 @@ export const askTOBet = (
     player.chips + player.bets[stage] >= gameState.highestBets[stage]
   ) {
     actions = ["fold", "call", "raise"];
+    const ZeroChipsPlayers = players.filter((p) => p.chips === 0);
+    const isLastPlayerStanding = ZeroChipsPlayers.length === players.length - 1;
+    if (isLastPlayerStanding) {
+      actions = ["fold", "call"];
+    }
     actionOptions.callAmount = gameState.highestBets[stage];
     const minRaise = Math.max(
       gameState.highestBets[stage] + table.blinds.big,
