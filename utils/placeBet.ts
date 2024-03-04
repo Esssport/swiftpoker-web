@@ -1,6 +1,7 @@
 import { next } from "./next.ts";
 import { GameState, Player, Table } from "./tableBlueprint.ts";
 import { askTOBet } from "./askTOBet.ts";
+import { broadcast } from "../api/broadcast.ts";
 
 export const placeBet = (
   table: Table,
@@ -35,6 +36,15 @@ export const placeBet = (
     askTOBet(table, bigBlindPlayer.username, ["check", "raise"]);
     return;
   }
+
+  const message = {
+    event: "bet-placed",
+    payload: {
+      table,
+    },
+  };
+
+  broadcast(message, table.id);
 
   next(table);
   return;

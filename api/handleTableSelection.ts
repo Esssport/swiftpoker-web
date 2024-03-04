@@ -20,6 +20,13 @@ export const handleTableSelection = async (ctx) => {
     );
   });
 
+  if (!lastSimilarTable) {
+    ctx.response.status = 400;
+    ctx.response.body = JSON.stringify({ error: "No table found" });
+    console.error("No table found");
+    return;
+  }
+  //TODO: fix error in case there is no table. maybe return a proper error message
   const potentialTable = serverTables.get(lastSimilarTable[0]);
   let finalTable: Table;
   //potentially move table generation logic to the class as a method

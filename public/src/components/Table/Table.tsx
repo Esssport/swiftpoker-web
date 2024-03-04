@@ -105,7 +105,6 @@ const joinTable = () => {
         }
         setCommunityCards(cardsArray);
         break;
-        break;
       case "table-updated":
         if (data.payload.allHands) {
           const allHandsMap: Map<string, Card[]> = new Map(
@@ -142,6 +141,9 @@ const joinTable = () => {
         break;
       case "clear-prompt":
         setActions([]);
+        break;
+      case "bet-placed":
+        setTable(data.payload.table);
         break;
       case "hands-updated":
         break;

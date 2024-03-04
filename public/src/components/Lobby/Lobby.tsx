@@ -29,7 +29,7 @@ const joinSimilarTable = () => {
         blinds: { small: 50, big: 100 },
         buyInAmount: 5000,
         type: "playmoney",
-        maxPlayers: 2,
+        maxPlayers: 6,
         username,
         //TODO: add a token
       }),

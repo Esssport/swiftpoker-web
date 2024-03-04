@@ -59,7 +59,8 @@ export const handleCreateTables = async (
     // { min: 5000000000, max: 5000000000, small: 25000000, big: 50000000 }, // 5 billion Ӿ500
   ];
 
-  const playerNumbers = [2, 6, 9];
+  // 2, 6, 9 players
+  const playerNumbers = [6, 9];
   let tableUniqueID = 1;
   for (const tableSettings of playmoneyTableSettings) {
     for (const playerCount of playerNumbers) {

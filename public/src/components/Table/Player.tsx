@@ -37,6 +37,7 @@ export const Player = (
                 <img src="/src/assets/chips/dealer.png" class="button-image" />
               </>
             )}
+            {player.folded && <div>FOLDED</div>}
             <div class="player-name">{player.username}</div>
             <div classList={{ "player-hand": true, "folded": player.folded }}>
               {playerHands

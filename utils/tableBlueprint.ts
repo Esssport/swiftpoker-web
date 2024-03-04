@@ -47,6 +47,7 @@ export class Player {
   private _hand: Card[];
   folded: boolean = true;
   isAllIn: boolean = false;
+  isSitOut: boolean = true;
   hasChecked: boolean;
 
   public set hand(cards: Card[]) {
@@ -200,6 +201,7 @@ export class Table {
     console.log("DEALING FOR ", playerCount);
     this.players.forEach((player) => {
       player.folded = false;
+      player.isSitOut = false;
     });
     const shuffledDeck: Card[] = shuffle(deck);
     const results = {
@@ -272,11 +274,5 @@ export class Table {
         }
       };
     });
-  }
-
-  public endGame() {
-  }
-
-  public static generate(tables: Map<number, Table>) {
   }
 }
