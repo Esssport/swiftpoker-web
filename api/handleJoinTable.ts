@@ -69,7 +69,12 @@ export const handleJoinTable = async (ctx) => {
     }, tableID);
     //   TODO: consider disconnected players.
     if (currentPlayers.length >= currentTable.minPlayers) {
-      currentTable.startGame();
+      if (currentTable.gameState.stage !== "waiting") {
+        newPlayer.folded = true;
+      }
+      if (currentTable.gameState.stage === "waiting") {
+        currentTable.startGame();
+      }
     }
   };
 

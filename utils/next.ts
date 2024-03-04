@@ -6,13 +6,12 @@ import { promptBet } from "./promptBet.ts";
 import { takeAction } from "./takeAction.ts";
 import { broadcast } from "../api/broadcast.ts";
 
-// let nextCounter = 0;
+let nextCounter = 0;
 export const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 export const next = async (table: Table) => {
-  // nextCounter += 1;
+  nextCounter += 1;
   const gameState = table.gameState;
-  // console.log("NEXT", nextCounter, "position", gameState.activePosition);
   const players = table.players;
   const stage = gameState.stage;
   let player = players.find((p) => p.position === gameState.activePosition);
@@ -22,18 +21,20 @@ export const next = async (table: Table) => {
     handleWinnings(table);
     return;
   }
-  // console.log(
-  //   "NEXT",
-  //   nextCounter,
-  //   "position",
-  //   gameState.activePosition,
-  //   "player",
-  //   player?.username,
-  //   "player.position",
-  //   player?.position,
-  //   "stage",
-  //   stage,
-  // );
+  console.log(
+    "NEXT",
+    nextCounter,
+    "activePosition",
+    gameState.activePosition,
+    "player",
+    player?.username,
+    "player.position",
+    player?.position,
+    "stage",
+    stage,
+    "players.length",
+    players.length,
+  );
   //check for bets to be matched
   if (gameState.activePosition > players.length - 1) {
     const unmatchedBets = players.filter((p) => {
@@ -113,7 +114,8 @@ export const next = async (table: Table) => {
   if (!player) {
     console.log("NO PLAYER");
     // set the table ready for the next round
-    goNextRound(table);
+    // goNextRound(table);
+    //FIXME: fix the case where a new player joins the table
     return;
   }
   if (

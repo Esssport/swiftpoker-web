@@ -38,6 +38,7 @@ export const Player = (
               </>
             )}
             {player.folded && <div>FOLDED</div>}
+            {player.isSitOut && <div>SITTING OUT</div>}
             <div class="player-name">{player.username}</div>
             <div classList={{ "player-hand": true, "folded": player.folded }}>
               {playerHands

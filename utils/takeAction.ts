@@ -17,14 +17,14 @@ export const takeAction = (input: BetInput) => {
   send(player.socket, message);
 
   const isAllIn = betAmount >= player.chips;
-  console.log(
-    "isAllIn",
-    isAllIn,
-    "player.chips",
-    player.chips,
-    "player.bets[stage]",
-    player.bets[stage],
-  );
+  // console.log(
+  //   "isAllIn",
+  //   isAllIn,
+  //   "player.chips",
+  //   player.chips,
+  //   "player.bets[stage]",
+  //   player.bets[stage],
+  // );
   const bet = isAllIn ? player.chips + player.bets[stage] : betAmount;
 
   const gameState = table.gameState;

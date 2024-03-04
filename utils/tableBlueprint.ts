@@ -248,8 +248,9 @@ export class Table {
   public addToWaitingList(player: Player) {
     this.waitingList.push(player);
   }
-
+  counter = 0;
   public startGame() {
+    console.log("starting game", this.counter + 1);
     this.isLastRound = false;
     //handle case where a user joins a table that is already in progress
     //handle case where a user leaves a table that is in progress
