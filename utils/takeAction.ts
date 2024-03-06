@@ -37,13 +37,13 @@ export const takeAction = (input: BetInput) => {
     player.isAllIn = true;
   }
 
-  if (!isAllIn && !isBlind && !isValidBet && !isValidRaise) {
-    console.log(`Invalid bet of ${bet} chips from ${player.username}`);
+  // if (!isAllIn && !isBlind && !isValidBet && !isValidRaise) {
+  //   console.log(`Invalid bet of ${bet} chips from ${player.username}`);
 
-    askTOBet(table, player.username);
-    console.log("TRY AGAIN");
-    return;
-  }
+  //   askTOBet(table, player.username);
+  //   console.log("TRY AGAIN");
+  //   return;
+  // }
 
   //TODO: potentially add a new action called "all-in"
   // if (player.isAllIn) {

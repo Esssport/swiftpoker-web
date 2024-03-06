@@ -162,7 +162,7 @@ export const next = async (table: Table) => {
   ) {
     const allInPlayers = players.filter((p) => p.isAllIn);
     // if player is all in, move to the next player
-    if (player.isAllIn) {
+    if (player.isAllIn || player.folded) {
       console.log("ALLIN", player.isAllIn, player.username);
       gameState.activePosition += 1;
       next(table);

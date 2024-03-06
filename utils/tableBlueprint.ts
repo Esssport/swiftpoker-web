@@ -47,8 +47,9 @@ export class Player {
   private _hand: Card[];
   folded: boolean = true;
   isAllIn: boolean = false;
-  isSitOut: boolean = true;
+  isSitOut: boolean = false;
   hasChecked: boolean;
+  isDisconnected: boolean = false;
 
   public set hand(cards: Card[]) {
     this._hand = cards;
@@ -201,7 +202,7 @@ export class Table {
     console.log("DEALING FOR ", playerCount);
     this.players.forEach((player) => {
       player.folded = false;
-      player.isSitOut = false;
+      // player.isSitOut = false;
     });
     const shuffledDeck: Card[] = shuffle(deck);
     const results = {

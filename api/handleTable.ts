@@ -9,6 +9,7 @@ export const handleTable = async (ctx) => {
     return ctx.response.body = {};
   } else {
     const table = serverTables.get(id);
+    console.log("TABLE FOUND", table.id, table.players.length, table.players);
     return ctx.response.body = JSON.stringify(table);
   }
 };

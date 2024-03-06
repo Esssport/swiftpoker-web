@@ -14,13 +14,18 @@ export const handleJoinTable = async (ctx) => {
   const buyInAmount = Number(ctx.request.url.searchParams.get(
     "buyInAmount",
   )) as number;
+  const currentTable = serverTables.get(tableID);
 
-  const socket: WebSocket = await ctx.upgrade();
+  if (currentTable.players.find((player) => player.username === username)) {
+    // socket.close(1008, `CONNECTION CLOSED, Username already in table`);
+    console.log("Username already in table, no action was taken");
+    return;
+  }
 
   // const username = ctx.request.url.searchParams.get("username") as string;
   // const tableID = Number(ctx.params.tableID) as number;
   //TODO: Refactor the error handling and input params to happen before socket is opened
-  const currentTable = serverTables.get(tableID);
+  const socket: WebSocket = await ctx.upgrade();
   socket.onopen = async (ctx) => {
     if (!tableID || !currentTable) {
       socket.close(
@@ -31,11 +36,6 @@ export const handleJoinTable = async (ctx) => {
       return;
     }
 
-    if (currentTable.players.find((player) => player.username === username)) {
-      // socket.close(1008, `CONNECTION CLOSED, Username already in table`);
-      console.log("Username already in table, no action was taken");
-      return;
-    }
     if (
       currentTable.players.length + currentTable.sitOutPlayers.length >=
         currentTable.maxPlayers
