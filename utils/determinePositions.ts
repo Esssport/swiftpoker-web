@@ -3,8 +3,8 @@ import { Table } from "./tableBlueprint.ts";
 export const determinePositions = (table: Table) => {
   const players = table.players;
   const state = table.gameState;
-  const PlayersInGame = players.filter((player) => !player.isSitOut);
-  PlayersInGame.forEach((player, i) => {
+  console.log("DETERMINING POSITION");
+  players.forEach((player, i) => {
     //maybe add seat attribute to player
     if (player.position !== undefined) {
       // return player;
@@ -49,5 +49,5 @@ export const determinePositions = (table: Table) => {
   });
   state.newGame = false;
   state.nextRound = false;
-  return PlayersInGame;
+  return players;
 };

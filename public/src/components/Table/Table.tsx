@@ -179,7 +179,7 @@ export const Table: Component = () => {
   });
 
   onCleanup(() => {
-    if (userSocket) userSocket.close();
+    if (userSocket) userSocket.close(1000, "User left the table");
   });
 
   return (

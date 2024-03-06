@@ -161,7 +161,7 @@ export class Table {
   isLastRound: boolean = false;
   players: Player[] = [];
   waitingList = [];
-  sitOutPlayers = [];
+  sitOutPlayers: Player[] = [];
   variantID: number;
   firstBets = { preflop: 0, flop: 0, turn: 0, river: 0 };
   pot = 0;
@@ -245,18 +245,36 @@ export class Table {
     this.players.push(player);
   }
 
+  public removePlayer(player: Player) {
+    this.players = this.players.filter((p) => p.username !== player.username);
+  }
+
+  public addSitOutPlayer(player: Player) {
+    this.sitOutPlayers.push(player);
+  }
+
+  public moveFromSitOutToTable(player: Player) {
+    this.sitOutPlayers = this.sitOutPlayers.filter(
+      (p) => p.username !== player.username,
+    );
+    this.players.push(player);
+  }
+
+  public addAllSitOutPlayersToTable() {
+    this.listenForPlayerActions(this.sitOutPlayers);
+    this.sitOutPlayers.forEach((player) => {
+      this.players.push(player);
+    });
+    this.sitOutPlayers = [];
+  }
+
   public addToWaitingList(player: Player) {
     this.waitingList.push(player);
   }
   counter = 0;
-  public startGame() {
-    console.log("starting game", this.counter + 1);
-    this.isLastRound = false;
-    //handle case where a user joins a table that is already in progress
-    //handle case where a user leaves a table that is in progress
-    //handle case where a user leaves and re-joins a table that is in progress
-    next(this);
-    this.players.forEach((player) => {
+
+  public listenForPlayerActions(players) {
+    players.forEach((player) => {
       player.socket.onmessage = (m) => {
         const data = JSON.parse(m.data);
         const gameState = this.gameState;
@@ -275,5 +293,14 @@ export class Table {
         }
       };
     });
+  }
+
+  public startGame() {
+    console.log("starting game", this.counter + 1);
+    this.isLastRound = false;
+    //handle case where a user leaves a table that is in progress
+    //handle case where a user leaves and re-joins a table that is in progress
+    next(this);
+    this.listenForPlayerActions(this.players);
   }
 }

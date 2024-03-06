@@ -19,7 +19,6 @@ export const handleJoinTable = async (ctx) => {
 
   // const username = ctx.request.url.searchParams.get("username") as string;
   // const tableID = Number(ctx.params.tableID) as number;
-
   //TODO: Refactor the error handling and input params to happen before socket is opened
   const currentTable = serverTables.get(tableID);
   socket.onopen = async (ctx) => {
@@ -32,12 +31,15 @@ export const handleJoinTable = async (ctx) => {
       return;
     }
 
-    // if (currentTable.players.find((player) => player.username === username)) {
-    //   socket.close(1008, `CONNECTION CLOSED, Username already in table`);
-    //   console.log("CONNECTION CLOSED, Username already in table");
-    //   return;
-    // }
-    if (currentTable.players.length >= currentTable.maxPlayers) {
+    if (currentTable.players.find((player) => player.username === username)) {
+      // socket.close(1008, `CONNECTION CLOSED, Username already in table`);
+      console.log("Username already in table, no action was taken");
+      return;
+    }
+    if (
+      currentTable.players.length + currentTable.sitOutPlayers.length >=
+        currentTable.maxPlayers
+    ) {
       socket.close(1008, `CONNECTION CLOSED, Table is full`);
       console.log("CONNECTION CLOSED, Table is full");
       return;
@@ -54,9 +56,22 @@ export const handleJoinTable = async (ctx) => {
     };
     const newPlayer = new Player(playerObj);
 
-    if (!currentPlayers.find((player) => player.username === username)) {
-      currentTable.addPlayer(newPlayer);
+    if (
+      !currentPlayers.find((player) => player.username === username) &&
+      !currentTable.sitOutPlayers.find((player) => player.username === username)
+    ) {
+      if (currentTable.gameState.stage === "waiting") {
+        currentTable.addPlayer(newPlayer);
+      } else {
+        currentTable.sitOutPlayers.push(newPlayer);
+      }
     }
+    // console.log(
+    //   "Players",
+    //   currentTable.players,
+    //   "sitout",
+    //   currentTable.sitOutPlayers,
+    // );
 
     broadcast({
       event: "table-updated",
@@ -69,9 +84,9 @@ export const handleJoinTable = async (ctx) => {
     }, tableID);
     //   TODO: consider disconnected players.
     if (currentPlayers.length >= currentTable.minPlayers) {
-      if (currentTable.gameState.stage !== "waiting") {
-        newPlayer.folded = true;
-      }
+      // if (currentTable.gameState.stage !== "waiting") {
+      // newPlayer.folded = true;
+      // }
       if (currentTable.gameState.stage === "waiting") {
         currentTable.startGame();
       }

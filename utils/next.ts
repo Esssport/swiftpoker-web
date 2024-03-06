@@ -96,6 +96,14 @@ export const next = async (table: Table) => {
   }
 
   if (gameState.newGame) {
+    if (table.maxPlayers > players.length + table.sitOutPlayers.length) {
+      console.log("Added sit out players to table");
+      table.sitOutPlayers.forEach((p) => console.log(p.username));
+      table.addAllSitOutPlayersToTable();
+    } else {
+      //TODO: Add one player at a time until the table is full
+    }
+    console.log("NEWWWWWW GAMEEEEEEE");
     const playersWithChips = players.filter((p) => p.chips > 0);
     if (playersWithChips.length < 2) {
       table.isLastRound = true;
@@ -113,8 +121,9 @@ export const next = async (table: Table) => {
   player = players.find((p) => p.position === gameState.activePosition);
   if (!player) {
     console.log("NO PLAYER");
+    console.log("PLAYERS", gameState.activePosition, players);
     // set the table ready for the next round
-    // goNextRound(table);
+    goNextRound(table);
     //FIXME: fix the case where a new player joins the table
     return;
   }
